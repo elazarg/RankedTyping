@@ -112,10 +112,10 @@ Grade–aware casts (as in \textsc{E4}) could supply \emph{budgets} to a gradual
 \paragraph{Erasure.}
 Define a collapse/erasure from graded to gradual types by
 \[
-\mathrm{erase}(\mathsf{Int}^{i})=\mathsf{Int},\quad
-\mathrm{erase}(\mathsf{String}^{i})=\mathsf{String},\quad
-\mathrm{erase}(\mathsf{Bool}^{i})=\mathsf{Bool},\quad
-\mathrm{erase}(\mathsf{Any}^{i})=?,
+\mathrm{erase}(\Int^{i})=\Int,\quad
+\mathrm{erase}(\String^{i})=\String,\quad
+\mathrm{erase}(\Bool^{i})=\Bool,\quad
+\mathrm{erase}(\Any^{i})=?,
 \]
 extended homomorphically over type constructors (products, sums, lists, \dots).
 
@@ -129,7 +129,7 @@ Add explicit casts \(\langle \tau \Rightarrow \tau'\rangle e\).
 Evaluation inserts runtime checks against the \emph{erased} target \(\mathrm{erase}(\tau')\);
 failures raise \emph{blame} at the cast site.
 The grade-aware downcast from \textsc{E4} is a typed form
-\(\forall i.\ \mathsf{Any}^{i} \to X^{\,i+1}\);
+\(\forall i.\ \Any^{i} \to X^{\,i+1}\);
 the collapsed mode also admits ungraded casts by erasure.
 
 \paragraph{Precision join correspondence.}

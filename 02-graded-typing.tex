@@ -49,13 +49,13 @@ Its definition proceeds by \emph{promotion to a common grade} followed by a same
 \begin{figure}[t]
 \centering
 \textbf{Promotion to common grade.}
-Define $\rank(\Any^{\bot}){=}\bot$, $\rank(\Any^{i}){=}i$, $\rank(X^{i}){=}i$, $\rank(\Any^{\infty}){=}\infty$.
-For $\tau_1,\tau_2$ with finite grades or $\bot$, set $r=\max(\rank(\tau_1),\rank(\tau_2))$ and let
+Define $\grade(\Any^{\bot}){=}\bot$, $\grade(\Any^{i}){=}i$, $\grade(X^{i}){=}i$, $\grade(\Any^{\infty}){=}\infty$.
+For $\tau_1,\tau_2$ with finite grades or $\bot$, set $r=\max(\grade(\tau_1),\grade(\tau_2))$ and let
 \[
 \uparrow^{r}(\tau) \;=\;
 \begin{cases}
-\tau & \text{if } \rank(\tau)=r,\\
-\Any^{r} & \text{if } \rank(\tau)<r\text{ (promote to least supertype at grade $r$).}
+\tau & \text{if } \grade(\tau)=r,\\
+\Any^{r} & \text{if } \grade(\tau)<r\text{ (promote to least supertype at grade $r$).}
 \end{cases}
 \]
 (If any operand is $\Any^{\infty}$, the join is $\Any^{\infty}$.)
@@ -76,7 +76,7 @@ X^{r} \sqcup Y^{r} & \Any^{r} & (X\neq Y)\ \text{(heterogeneous merge; no bump)}
 \tau_1 \sqcup \tau_2 \;=\;
 \begin{cases}
 \Any^{\infty} & \text{if }\tau_1=\Any^{\infty}\text{ or }\tau_2=\Any^{\infty},\\
-\uparrow^{r}(\tau_1)\ \sqcup\ \uparrow^{r}(\tau_2) & \text{where } r=\max(\rank(\tau_1),\rank(\tau_2)).
+\uparrow^{r}(\tau_1)\ \sqcup\ \uparrow^{r}(\tau_2) & \text{where } r=\max(\grade(\tau_1),\grade(\tau_2)).
 \end{cases}
 \]
 \vspace{-1mm}
@@ -108,5 +108,5 @@ The language and its abstract interpreter (expressions, statements, \textsf{whil
 
 \paragraph*{Notation.}
 We write $\Int,\String,\Bool,\Any$ in \textsf{sans} and use
-$\rank(\cdot)$ and $\uparrow^{r}(\cdot)$ as defined above.
+$\grade(\cdot)$ and $\uparrow^{r}(\cdot)$ as defined above.
 Include \texttt{mathpartir} for the inference rules.
