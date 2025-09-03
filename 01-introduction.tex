@@ -1,14 +1,14 @@
 \section{Introduction}
 
 Path-insensitive analyses are fast and predictable, but they routinely \emph{collapse} information at control-flow joins.
-A common outcome is that a variable alternately assigned an integer and a string is reported as a single top-like “unknown,” and every downstream use inherits that imprecision.
+A common outcome is that a variable alternately assigned an integer and a string is reported as a single top-like ``unknown,'' and every downstream use inherits that imprecision.
 The analysis remains sound as an over-approximation, but it is hard to act on: we learn \emph{that} precision was lost, not \emph{where} or \emph{how much}.
 
 We propose an \emph{unfolded} view of the unknown: a ranked algebra of types that makes loss of precision explicit and compositional.
 Base types (\(\mathsf{Int},\mathsf{String},\mathsf{Bool}\)) and \(\mathsf{Any}\) are annotated with a nonnegative \emph{rank} \(i\), written \(X^{i}\) and \(\mathsf{Any}^{i}\).
-Joins are conservative—merging incompatible bases at the same rank yields \(\mathsf{Any}^{r}\) (no bump).
+Joins are conservative: after promotion to a common rank \(r\), merging incompatible bases at that rank yields \(\mathsf{Any}^{r}\) (no bump).
 Ranks increase only when the analysis \emph{commits to a base after imprecision}:
-the subtyping step \(\mathsf{Any}^{i} \le X^{\,i+1}\) captures the “downcast” (assumption) that reinterprets an imprecise value as a concrete base, and increments the rank.
+the subtyping step \(\mathsf{Any}^{i} \le X^{\,i+1}\) captures the ``downcast'' (assumption) that reinterprets an imprecise value as a concrete base, and increments the rank.
 Operational semantics are unchanged; ranks live purely in the analysis.
 
 Two consequences follow.
@@ -30,6 +30,6 @@ We keep the core static and cast-free; a small extension adds rank-aware casts a
 \end{itemize}
 
 \paragraph{Utility.}
-The immediate use case is diagnostic: instead of reporting a bare “\(\mathsf{Any}\),” the analyzer reports \(\mathsf{Any}^{k}\) and points to the joins/uses that forced \(k\) assumptions.
+The immediate use case is diagnostic: instead of reporting a bare ``\(\mathsf{Any}\),'' the analyzer reports \(\mathsf{Any}^{k}\) and points to the joins/uses that forced \(k\) assumptions.
 Because rank growth is tied to identifiable choke points where a base is demanded, remediation focuses on a bounded set of locations.
 The scheme is unobtrusive: no runtime checks, no language changes, and no change to concrete semantics.

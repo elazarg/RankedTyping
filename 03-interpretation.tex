@@ -33,11 +33,11 @@ An \emph{abstract environment} is a map $\Gamma:\Var\to\tau$.
 Ordering and joins on environments are pointwise, using the subtyping $\le$ and join $\sqcup$ on types defined previously.
 
 \paragraph{Rank-aware coercion to a base.}
-For $X\in\{\Int,\String,\Bool\}$ and a type $\tau$, define the \emph{least $X$-supertype} (when it exists) by
+For $X\in\{\Int,\String,\Bool\}$ and a type $\tau$, define the \emph{least $X$-supertype} by
 \[
 \ceil{\tau}_X \;=\; \min\nolimits_{\le}\,\{\,X^{k}\mid \tau \le X^{k}\,\}.
 \]
-Under the subtyping rules of Fig.~\ref{fig:subtyping}, $\ceil{\tau}_X$ always exists and is unique; intuitively, $\ceil{\cdot}_X$ “raises” $\tau$ to the nearest $X$-typed supertype, possibly increasing its rank.
+Under the subtyping rules of Fig.~\ref{fig:subtyping}, $\ceil{\tau}_X$ always exists and is unique; intuitively, $\ceil{\cdot}_X$ “raises” $\tau$ to the nearest $X$-typed supertype (performing a downcast $\Any^{i}\!\le\!X^{i+1}$ exactly when needed).
 
 \paragraph{Abstract expressions.}
 We write $\Gamma \vdash e : \tau$ for abstract evaluation.
@@ -59,18 +59,18 @@ We write $\Gamma \vdash e : \tau$ for abstract evaluation.
   { \Gamma \vdash e : \tau' }
 \end{mathpar}
 
-\noindent Binary and unary operators are typed by coercing operands to the relevant base(s) and then combining ranks via $max$; when multiple operator interpretations apply, we join their results:
+\noindent Operators coerce operands to the relevant base(s) using $\ceil{\cdot}_X$ and then combine ranks via $\max$; when multiple operator interpretations apply, we join the results:
 
 \begin{mathpar}
 \inferrule*[right=(Plus$_\Int$)]
   { \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
     \ceil{\tau_1}_\Int = \Int^{i} \quad \ceil{\tau_2}_\Int = \Int^{j} }
-  { \Gamma \vdash e_1{+}e_2 : \Int^{max(i,j)} }
+  { \Gamma \vdash e_1{+}e_2 : \Int^{\max(i,j)} }
 
 \inferrule*[right=(Plus$_\String$)]
   { \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
     \ceil{\tau_1}_\String = \String^{i} \quad \ceil{\tau_2}_\String = \String^{j} }
-  { \Gamma \vdash e_1{+}e_2 : \String^{max(i,j)} }
+  { \Gamma \vdash e_1{+}e_2 : \String^{\max(i,j)} }
 
 \inferrule*[right=(Plus-Join)]
   { \Gamma \vdash e_1{+}e_2 : \tau_I \quad \Gamma \vdash e_1{+}e_2 : \tau_S }
@@ -85,7 +85,7 @@ We write $\Gamma \vdash e : \tau$ for abstract evaluation.
 \inferrule*[right=(And)]
   { \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
     \ceil{\tau_1}_\Bool=\Bool^{i} \quad \ceil{\tau_2}_\Bool=\Bool^{j} }
-  { \Gamma \vdash e_1 \wedge e_2 : \Bool^{max(i,j)} }
+  { \Gamma \vdash e_1 \wedge e_2 : \Bool^{\max(i,j)} }
 \end{mathpar}
 
 \begin{mathpar}
@@ -93,8 +93,8 @@ We write $\Gamma \vdash e : \tau$ for abstract evaluation.
   { X\in\{\Int,\String,\Bool\} \\
     \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
     \ceil{\tau_1}_X = X^{i} \quad \ceil{\tau_2}_X = X^{j} }
-  { \Gamma \vdash e_1 {=} e_2 : \Bool^{max(i,j)} }
-\\
+  { \Gamma \vdash e_1 {=} e_2 : \Bool^{\max(i,j)} }
+\qquad
 \inferrule*[right=(Eq-Join)]
   { \Gamma \vdash e_1{=}e_2 : \rho_1 \quad
     \Gamma \vdash e_1{=}e_2 : \rho_2 }
@@ -126,17 +126,17 @@ We write $\Gamma \vdash s \triangleright \Gamma'$ for the abstract transformer.
       \triangleright (\Gamma_1 \sqcup \Gamma_2) }
 \end{mathpar}
 
-\noindent Loops are treated as least fixed points of a monotone functional (Kleene iteration suffices):
+\noindent Loops are defined as least fixed points of a monotone functional.
 
 \begin{mathpar}
 \inferrule*[right=(While)]
-  { F(\Delta) \;=\; \Delta' \text{ where }
-    \Delta \vdash e:\tau,\ \ceil{\tau}_\Bool=\Bool^{i},\ 
-    \Delta \vdash s \triangleright \Delta' \\
-    \Gamma^\star \text{ is the least solution of } \Gamma^\star = \Gamma \sqcup F(\Gamma^\star) }
+  { \text{Define } F(\Delta) \;=\; \Gamma \;\sqcup\; \Delta_{\!b}
+      \text{ where } \Delta \vdash e:\tau,\ \ceil{\tau}_\Bool=\Bool^{i},\
+      \Delta \vdash s \triangleright \Delta_{\!b} \\
+    \Gamma^\star \text{ is the least fixed point of } F }
   { \Gamma \vdash \mathsf{while}\; e\;\mathsf{do}\; s \triangleright \Gamma^\star }
 \end{mathpar}
 
 \paragraph{Remarks.}
 All joins are those of \S\ref{sec:types} (promotion to a common rank followed by same-rank join).
-Because programs have finitely many join sites and ranks only increase via such joins, the per-program abstract domain is finite up to the program’s control-flow structure; Kleene iteration therefore terminates without an additional widening.
+Because programs have finitely many join sites and ranks only increase at downcasts (which occur at finitely many use sites), the per-program abstract domain reachable by iteration is finite up to the program’s control-flow structure; hence Kleene iteration terminates without an additional widening.
