@@ -1,3 +1,29 @@
+
+\section{The \textsf{Graded} Type System}
+\label{sec:types}
+
+We factor path-insensitivity at control-flow joins into a lightweight, \emph{grade}-annotated type algebra. Grades are \emph{static} metadata; runtime values are unannotated. Intuitively, a grade increases exactly when the analysis must \emph{commit to a base after imprecision}; i.e., when downcasting from $\Any$ to a concrete base via subtyping. Heterogeneous joins themselves do not raise the grade.
+
+\paragraph{Indices and intuition.}
+Grades range over $\mathbb{N}=\{0,1,2,\dots\}$, with two distinguished symbols:
+a formal bottom $\bot$ used only by $\Any^{\bot}$, and an absorbing top $\infty$ used only by $\Any^{\infty}$.
+Base literals appear at grade $0$.
+We extend $\max$ by $\max(\bot,j)=j$ for $j\in\mathbb{N}$ (and never apply $+1$ to $\bot$ or $\infty$).
+
+\begin{figure}[t]
+\centering
+\[
+\begin{array}{rcll}
+i &::=& 0 \mid 1 \mid 2 \mid \cdots & \text{(finite grades)}\\[2pt]
+X &::=& \Int \mid \String \mid \Bool & \text{(base types)}\\[2pt]
+\tau &::=& X^{i} \mid \Any^{i} \mid \Any^{\bot} \mid \Any^{\infty} & \text{(graded types)}
+\end{array}
+\]
+\vspace{-2mm}
+\caption{Syntax of graded types.}
+\label{fig:syntax}
+\end{figure}
+
 \begin{figure}[ht]
 \centering
 \begin{tikzpicture}[
@@ -58,31 +84,6 @@
 {Hasse diagram of the graded type lattice. Each rank $i$ consists of base types below $\Any^i$. 
 The ranks are connected by the subtyping rule $\Any^i \le X^{i+1}$, forming a vertical chain.}
 \label{fig:hassediagram}
-\end{figure}
-
-\section{The \textsf{Graded} Type System}
-\label{sec:types}
-
-We factor path-insensitivity at control-flow joins into a lightweight, \emph{grade}-annotated type algebra. Grades are \emph{static} metadata; runtime values are unannotated. Intuitively, a grade increases exactly when the analysis must \emph{commit to a base after imprecision}; i.e., when downcasting from $\Any$ to a concrete base via subtyping. Heterogeneous joins themselves do not raise the grade.
-
-\paragraph{Indices and intuition.}
-Grades range over $\mathbb{N}=\{0,1,2,\dots\}$, with two distinguished symbols:
-a formal bottom $\bot$ used only by $\Any^{\bot}$, and an absorbing top $\infty$ used only by $\Any^{\infty}$.
-Base literals appear at grade $0$.
-We extend $\max$ by $\max(\bot,j)=j$ for $j\in\mathbb{N}$ (and never apply $+1$ to $\bot$ or $\infty$).
-
-\begin{figure}[t]
-\centering
-\[
-\begin{array}{rcll}
-i &::=& 0 \mid 1 \mid 2 \mid \cdots & \text{(finite grades)}\\[2pt]
-X &::=& \Int \mid \String \mid \Bool & \text{(base types)}\\[2pt]
-\tau &::=& X^{i} \mid \Any^{i} \mid \Any^{\bot} \mid \Any^{\infty} & \text{(graded types)}
-\end{array}
-\]
-\vspace{-2mm}
-\caption{Syntax of graded types.}
-\label{fig:syntax}
 \end{figure}
 
 \paragraph{Subtyping.}

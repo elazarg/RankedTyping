@@ -24,6 +24,16 @@ The mapping $X^{i}\mapsto X^{i+k}$ induced by a body behaves like a grade; multi
 \paragraph{Grade-parametric functions.}
 We sketched types like $\forall i.\ \Int^i\!\to\!\Int^{i+3}$ and $\forall i,j.\ \Any^i\times\Bool^j\!\to\!\String^{\max(i,j)+1}$. Future work: formal typing/equational theory, principal-grade inference via lightweight $\max$/$+$ constraints, and interaction with polymorphism (generalization, ambiguity).
 
+\paragraph{Guard optimization as static overload dispatch.}
+Grade-parametric functions naturally induce a form of \emph{compile-time overloading} by grade: a function $f : \forall i.\ \tau^i \to \tau'^{i+k}$ can be specialized into distinct implementations $f_0, f_1, \ldots$ based on the input grade. 
+Crucially, the grade-$0$ specialization $f_0 : \tau^0 \to \tau'^k$ operates on \emph{precisely-typed} values—those that have never passed through an imprecise join—and thus requires no runtime type guards or defensive checks.
+Higher-grade specializations $f_j$ ($j > 0$) must account for potential imprecision and include appropriate dynamic checks.
+
+This decomposition mirrors common JIT optimization strategies: hot paths with monomorphic types (corresponding to grade $0$) are compiled to tight, guard-free machine code, while polymorphic call sites (higher grades) retain full dynamic dispatch.
+The grade annotation makes this optimization opportunity \emph{explicit} in the type system rather than relying on runtime profiling.
+For instance, a list-processing function at grade $0$ knows all elements share the same concrete type and can vectorize operations or eliminate bounds checks, while the same function at grade $k > 0$ must remain defensive.
+In effect, grades provide a static approximation of the runtime type stability that JIT compilers discover dynamically—enabling ahead-of-time optimization decisions based on the analysis-time precision guarantee.
+
 \subsection{Semantic Foundations}
 \paragraph{Abstract-interpretation account.}
 A Galois-connection presentation would separate (i) the subtyping poset used for coercions and (ii) the analysis semilattice (promotion then same-grade LUB). This clarifies soundness from monotonicity and the role of promotion. For the \emph{merge-counting} variant (\S\ref{sec:extensions}), state precisely how the analysis join departs from the $\le$-LUB.
@@ -46,7 +56,7 @@ In SSA, $\phi$-nodes are explicit choke points. Label them with site IDs and pro
 A least-grade subsumption discipline keeps expression typing deterministic. Analyze worst-case complexity under large join degrees, and engineer incremental fixed-point solvers; quantify bounds in terms of program size and number of base-demand sites.
 
 \paragraph{User experience.}
-Evaluate whether bounded-blame reports (e.g., “$x$ imprecise due to sites \#7,\#12”) improve remediation compared to undifferentiated ``type is Any''.
+Evaluate whether bounded-blame reports (e.g., ``$x$ imprecise due to sites \#7,\#12'') improve remediation compared to undifferentiated ``type is Any''.
 
 \subsection{Relations to Gradual Typing}
 Our lattice analysis remains distinct from consistency-based gradual typing. Two bridges: (i) a cast calculus with \emph{graded casts} (blame budgets); (ii) a \emph{conservative fragment} where grades never increase and the system coincides with a conventional static discipline. A grade-indexed gradual guarantee is open.

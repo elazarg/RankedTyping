@@ -1,5 +1,5 @@
 \begin{abstract}
-Path-insensitive analyses are cheap but routinely lose precision at joins, collapsing heterogeneous flows to an opaque “unknown.”
+Path-insensitive analyses are cheap but routinely lose precision at joins, collapsing heterogeneous flows to an opaque ``unknown.''
 We make that loss explicit and quantifiable.
 The key insight is a graded algebra of types where base types and $\Any$ carry a nonnegative grade $i$; grades increase \emph{only} when a use forces a base after imprecision (the subtyping step $\Any^{i}\!\le\!X^{i+1}$), while heterogeneous joins are conservative ($X^{r}\sqcup Y^{r}=\Any^{r}$ after promotion).
 Instantiated in a conventional abstract interpreter, grades act as a small, compositional signal of \emph{how much} and \emph{where} assumptions were forced.

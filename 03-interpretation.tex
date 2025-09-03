@@ -37,7 +37,7 @@ For $X\in\{\Int,\String,\Bool\}$ and a type $\tau$, define the \emph{least $X$-s
 \[
 \ceil{\tau}_X \;=\; \min\nolimits_{\le}\,\{\,X^{k}\mid \tau \le X^{k}\,\}.
 \]
-Under the subtyping rules of Fig.~\ref{fig:subtyping}, $\ceil{\tau}_X$ always exists and is unique; intuitively, $\ceil{\cdot}_X$ “raises” $\tau$ to the nearest $X$-typed supertype (performing a downcast $\Any^{i}\!\le\!X^{i+1}$ exactly when needed).
+Under the subtyping rules of Fig.~\ref{fig:subtyping}, $\ceil{\tau}_X$ always exists and is unique; intuitively, $\ceil{\cdot}_X$ ``raises'' $\tau$ to the nearest $X$-typed supertype (performing a downcast $\Any^{i}\!\le\!X^{i+1}$ exactly when needed).
 
 \paragraph{Abstract expressions.}
 We write $\Gamma \vdash e : \tau$ for abstract evaluation.

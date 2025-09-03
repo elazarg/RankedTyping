@@ -60,7 +60,7 @@ Solve the resulting monotone system over $(\mathbb{N},\le)$ using least solution
 \medskip
 
 \subsection{\textsc{E2: Grades as Effects (Graded)}}
-Treat “grade increase” as an effect grade.
+Treat ``grade increase'' as an effect grade.
 A typing judgment carries a grade $g\in\mathbb{N}$; arrows become graded:
 \(
 \Gamma \vdash e : \tau \;!\; g
@@ -70,7 +70,7 @@ This yields a small-step algebra matching the grade equations in \textsc{E1}.
 
 \subsection{\textsc{E3: Bounded–Grade Modes}}
 Introduce a modal cap $\square_{\le k}$ that restricts programs (or interfaces) to yield grades $\le k$.
-Useful for “precision budgets” and for rejecting overly imprecise code at module boundaries.
+Useful for ``precision budgets'' and for rejecting overly imprecise code at module boundaries.
 
 \subsection{\textsc{E4: Grade–Aware Cast Calculus}}
 Add explicit casts $\langle \tau \Rightarrow \tau'\rangle e$ with types such as
@@ -89,7 +89,7 @@ Extend the lattice structurally:
 \subsection{\textsc{E6: SSA \& \texorpdfstring{$\phi$}{phi}–Site Instrumentation}}
 In SSA, $\phi$–nodes are explicit choke points.
 Label them with site IDs, propagate \emph{ghost culprit sets} alongside grades, and surface precise diagnostics:
-“$x$ imprecise due to $\phi$ at blocks \#7,\#12”.
+``$x$ imprecise due to $\phi$ at blocks \#7,\#12''.
 
 \subsection{\textsc{E7: Correlation Recovery (Selective Refinement)}}
 Augment the analysis with lightweight relational facts (e.g., guard-sensitivity at chosen joins),
