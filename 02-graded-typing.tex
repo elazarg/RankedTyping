@@ -1,4 +1,66 @@
-\section{Graded \textsf{Any} Type System}
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm and 1cm,
+    base/.style={circle, draw, inner sep=2pt},
+    any/.style={rectangle, draw, inner sep=3pt}
+]
+    % Grade k (Top)
+    \node (anyk) [any] {$\Any^k$};
+    \node (intk) [base, below left=of anyk] {$\Int^k$};
+    \node (strk) [base, below=of anyk] {$\String^k$};
+    \node (boolk) [base, below right=of anyk] {$\Bool^k$};
+    
+    \draw[-latex] (intk) -- (anyk);
+    \draw[-latex] (strk) -- (anyk);
+    \draw[-latex] (boolk) -- (anyk);
+
+    % Ellipsis
+    \node (vdots) [below=of strk, yshift=0.5cm] {\vdots};
+
+    % Grade 1
+    \node (any1) [any, below=of vdots, yshift=0.5cm] {$\Any^1$};
+    \node (int1) [base, below left=of any1] {$\Int^1$};
+    \node (str1) [base, below=of any1] {$\String^1$};
+    \node (bool1) [base, below right=of any1] {$\Bool^1$};
+
+    \draw[-latex] (int1) -- (any1);
+    \draw[-latex] (str1) -- (any1);
+    \draw[-latex] (bool1) -- (any1);
+    
+    % Connections from rank k-1 to k
+    \path (vdots) edge[-latex] (intk);
+    \path (vdots) edge[-latex] (strk);
+    \path (vdots) edge[-latex] (boolk);
+
+    % Grade 0
+    \node (any0) [any, below=of str1] {$\Any^0$};
+    \node (int0) [base, below left=of any0] {$\Int^0$};
+    \node (str0) [base, below=of any0] {$\String^0$};
+    \node (bool0) [base, below right=of any0] {$\Bool^0$};
+
+    \draw[-latex] (int0) -- (any0);
+    \draw[-latex] (str0) -- (any0);
+    \draw[-latex] (bool0) -- (any0);
+    
+    % Connections from rank 0 to 1
+    \draw[-latex] (any0) -- (int1);
+    \draw[-latex] (any0) -- (str1);
+    \draw[-latex] (any0) -- (bool1);
+    
+    \node (anybot) [any, below=of str0] {$\Any^{\bot}$};
+    
+    \draw[-latex] (anybot) -- (int0);
+    \draw[-latex] (anybot) -- (str0);
+    \draw[-latex] (anybot) -- (bool0);
+\end{tikzpicture}
+\caption[Hasse diagram of the graded type lattice]%
+{Hasse diagram of the graded type lattice. Each rank $i$ consists of base types below $\Any^i$. 
+The ranks are connected by the subtyping rule $\Any^i \le X^{i+1}$, forming a vertical chain.}
+\label{fig:hassediagram}
+\end{figure}
+
+\section{The \textsf{Graded} Type System}
 \label{sec:types}
 
 We factor path-insensitivity at control-flow joins into a lightweight, \emph{grade}-annotated type algebra. Grades are \emph{static} metadata; runtime values are unannotated. Intuitively, a grade increases exactly when the analysis must \emph{commit to a base after imprecision}—i.e., when downcasting from $\Any$ to a concrete base via subtyping. Heterogeneous joins themselves do not raise the grade.

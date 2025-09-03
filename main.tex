@@ -1,28 +1,25 @@
 
 \documentclass{iacrtrans}
-% \usepackage{Fast/usenix-2020-09}
-
-
+\makeatletter
+\renewcommand{\addcontentsline}[3]{}
+\makeatother
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{booktabs}
 \usepackage{stmaryrd}
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+
 \usepackage{listings}
-\usepackage{pgfplots}
-\usepackage{pgfplotstable}
-\usepackage{subcaption}
 \usepackage{caption}
-\usepackage{mathpartir}
 \usepackage{subcaption}
+\usepackage{mathpartir}
 \usepackage{syntax}
-\usepackage{textgreek} % for \textDelta
 \usepackage{comment}
 \usepackage{verbatim}
 \usepackage{url}
-
-\lstset{basicstyle={\ttfamily\fontsize{9pt}{9pt}\selectfont},language=python}
 
 \title{Graded Typing}
 \author{Elazar Gershuni}
