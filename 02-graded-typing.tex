@@ -63,7 +63,7 @@ The ranks are connected by the subtyping rule $\Any^i \le X^{i+1}$, forming a ve
 \section{The \textsf{Graded} Type System}
 \label{sec:types}
 
-We factor path-insensitivity at control-flow joins into a lightweight, \emph{grade}-annotated type algebra. Grades are \emph{static} metadata; runtime values are unannotated. Intuitively, a grade increases exactly when the analysis must \emph{commit to a base after imprecision}—i.e., when downcasting from $\Any$ to a concrete base via subtyping. Heterogeneous joins themselves do not raise the grade.
+We factor path-insensitivity at control-flow joins into a lightweight, \emph{grade}-annotated type algebra. Grades are \emph{static} metadata; runtime values are unannotated. Intuitively, a grade increases exactly when the analysis must \emph{commit to a base after imprecision}; i.e., when downcasting from $\Any$ to a concrete base via subtyping. Heterogeneous joins themselves do not raise the grade.
 
 \paragraph{Indices and intuition.}
 Grades range over $\mathbb{N}=\{0,1,2,\dots\}$, with two distinguished symbols:

@@ -147,7 +147,7 @@ where \(\sqcup_{\!\sim}\) is the usual precision join in gradual typing (e.g., \
 (iii) \emph{Gradual guarantee}: precision monotonicity phrased on erased types. 
 (iv) \emph{Embedding}: the graded system embeds into the gradual system by \(\mathrm{erase}\); the reverse picks finite-grade representatives.
 
-\subsection{\textsc{E11: Metric Toggle — Downcast vs.\ Merge Counting}}
+\subsection{\textsc{E11: Metric Toggle: Downcast vs.\ Merge Counting}}
 
 Our core uses the \emph{downcast-counting} metric:
 heterogeneous same-grade joins return \(\Any^{r}\) (no bump), and grades increase only at subtyping steps \(\Any^{i}\le X^{\,i+1}\) when a base is demanded.
@@ -182,4 +182,4 @@ Either can be selected without changing the concrete semantics or the core latti
 
 \paragraph{Summary.}
 \textsc{E1} makes grades first–class in function specifications with a simple, solvable constraint language.
-\textsc{E2}–\textsc{E9} explore orthogonal axes—effects, budgets, casts, richer types, SSA integration, precision recovery, higher order, and interop—without disturbing the core algebra.
+\textsc{E2}–\textsc{E9} explore orthogonal axes: effects, budgets, casts, richer types, SSA integration, precision recovery, higher order, and interop.

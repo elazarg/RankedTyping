@@ -11,25 +11,25 @@ AGT uses a \emph{single} unknown ($?$) whose meaning is given by concretization 
 Generalizations beyond simple types include gradual type-and-effect systems \cite{BanadosSchwerterGarciaTanter2016} and frameworks for gradualizing annotated type systems \cite{ThiemannFennell2014}. These quantify imprecision via a \emph{single} unknown element ($?$) and a consistency relation. In contrast, our grades stratify imprecision arithmetically, recording how many assumptions were needed, while retaining a conventional join-semilattice discipline.
 
 \paragraph{Blame calculi and static blame.}
-The blame calculus connects gradual/hybrid typing with higher-order contracts and proves the blame theorem: when casts fail, responsibility lies on the less-precisely typed side \cite{WadlerFindler2009}; polymorphic extensions preserve these guarantees \cite{AhmedFindlerSiekWadler2011}. More recently, \emph{static blame} predicts potential blame without executing programs \cite{SuCulpepper2024}. Our setting shares the diagnostic spirit but introduces neither casts nor contract boundaries; the grade is a static, flow-sensitive measure of precision loss at control-flow joins and later downcasts.
+The blame calculus connects gradual/hybrid typing with higher-order contracts and proves the blame theorem: when casts fail, responsibility lies on the less-precisely typed side \cite{WadlerFindler2009}; polymorphic extensions preserve these guarantees \cite{AhmedFindlerSiekWadler2011}. More recently, \emph{static blame} predicts potential blame without executing programs~\cite{SuCulpepper2024}. Our setting shares the diagnostic spirit but introduces neither casts nor contract boundaries; the grade is a static, flow-sensitive measure of precision loss at control-flow joins and later downcasts.
 
 \paragraph{Soft and quasi-static typing.}
-Soft typing \cite{CartwrightFagan1991} and quasi-static typing \cite{Thatte1990} prefigure many aims of gradual typing: inferring permissive types and inserting checks as needed (often around a greatest element such as $\Omega$ or \textsf{Dyn}). By contrast, our analysis remains fully static and is not a source-to-source transformation; quantitative information is recorded as a grade in the abstract domain rather than materialized as runtime checks.
+Soft typing \cite{CartwrightFagan1991} and quasi-static typing~\cite{Thatte1990} prefigure many aims of gradual typing: inferring permissive types and inserting checks as needed (often around a greatest element such as $\Omega$ or \textsf{Dyn}). By contrast, our analysis remains fully static and is not a source-to-source transformation; quantitative information is recorded as a grade in the abstract domain rather than materialized as runtime checks.
 
 \paragraph{Typed/untyped interoperation via ``like'' types.}
-Thorn’s \emph{like types} enable fine-grained interoperation between typed and untyped code while retaining optimization potential in typed regions \cite{WrigstadEtAl2010}. This is complementary: it proposes language constructs and runtime checks for interoperability, whereas we supply a static accounting of precision loss that can inform where such boundaries matter.
+Thorn’s \emph{like types} enable fine-grained interoperation between typed and untyped code while retaining optimization potential in typed regions~\cite{WrigstadEtAl2010}. This is complementary: it proposes language constructs and runtime checks for interoperability, whereas we supply a static accounting of precision loss that can inform where such boundaries matter.
 
 \paragraph{Abstract interpretation.}
-Methodologically, our analysis is a standard monotone, flow-sensitive abstract interpretation \cite{CousotCousot1977}. The novelty lies in the abstract domain: an \emph{unfolded} per-program slice in which the conservative same-grade join is the LUB and grade increases only at finitely many base-demand sites (idempotent per site). Thus fixed points exist without bespoke widenings, and the diagnostic information (grades and culprit sites) is exposed rather than collapsed.
+Methodologically, our analysis is a standard monotone, flow-sensitive abstract interpretation~\cite{CousotCousot1977}. The novelty lies in the abstract domain: an \emph{unfolded} per-program slice in which the conservative same-grade join is the LUB and grade increases only at finitely many base-demand sites (idempotent per site). Thus fixed points exist without bespoke widenings, and the diagnostic information (grades and culprit sites) is exposed rather than collapsed.
 
 \paragraph{Path sensitivity and disjunctive completion.}
 Precision at joins can be recovered by duplicating control-flow contexts rather than collapsing them: 
-trace partitioning, disjunctive completion, and configurable program analysis (CPA) are standard ways to pay for path sensitivity where it matters \cite{MauborgneRival2005,BeyerHenzinger2007}.
+trace partitioning, disjunctive completion, and configurable program analysis (CPA) are standard ways to pay for path sensitivity where it matters~\cite{MauborgneRival2005,BeyerHenzinger2007}.
 Our approach is orthogonal: we remain path-insensitive but \emph{quantify} and \emph{attribute} the assumptions forced by later uses.
 Rather than keeping disjunctions, we collapse early and carry a small integral signal (\emph{grade}) plus culprit sites; this keeps fixed-point iteration cheap while producing actionable diagnostics.
 
 \paragraph{Flow/occurrence typing and control-flow refinement.}
-Occurrence typing as in Typed Racket refines variable types across branches and joins by inspecting guards, recovering precision without runtime checks \cite{TobinHochstadtFelleisen2008}.
+Occurrence typing as in Typed Racket refines variable types across branches and joins by inspecting guards, recovering precision without runtime checks~\cite{TobinHochstadtFelleisen2008}.
 Industrial analyzers (e.g., TypeScript, Flow) employ related control-flow analysis with unions.
 These systems aim to \emph{avoid} imprecision; our aim is to \emph{make residual imprecision explicit and localizable}.
 Where occurrence typing succeeds, our grades stay low; when correlations are untracked (by design), grades expose how many use-site assumptions were needed and where they arose.
