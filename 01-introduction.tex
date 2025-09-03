@@ -4,32 +4,32 @@ Path-insensitive analyses are fast and predictable, but they routinely \emph{col
 A common outcome is that a variable alternately assigned an integer and a string is reported as a single top-like ``unknown,'' and every downstream use inherits that imprecision.
 The analysis remains sound as an over-approximation, but it is hard to act on: we learn \emph{that} precision was lost, not \emph{where} or \emph{how much}.
 
-We propose an \emph{unfolded} view of the unknown: a ranked algebra of types that makes loss of precision explicit and compositional.
-Base types (\(\mathsf{Int},\mathsf{String},\mathsf{Bool}\)) and \(\mathsf{Any}\) are annotated with a nonnegative \emph{rank} \(i\), written \(X^{i}\) and \(\mathsf{Any}^{i}\).
-Joins are conservative: after promotion to a common rank \(r\), merging incompatible bases at that rank yields \(\mathsf{Any}^{r}\) (no bump).
-Ranks increase only when the analysis \emph{commits to a base after imprecision}:
-the subtyping step \(\mathsf{Any}^{i} \le X^{\,i+1}\) captures the ``downcast'' (assumption) that reinterprets an imprecise value as a concrete base, and increments the rank.
-Operational semantics are unchanged; ranks live purely in the analysis.
+We propose an \emph{unfolded} view of the unknown: a \emph{graded} algebra of types that makes loss of precision explicit and compositional.
+Base types (\(\mathsf{Int},\mathsf{String},\mathsf{Bool}\)) and \(\Any\) are annotated with a nonnegative \emph{grade} \(i\), written \(X^{i}\) and \(\Any^{i}\).
+Joins are conservative: after promotion to a common grade \(r\), merging incompatible bases at that grade yields \(\Any^{r}\) (no bump).
+Grades increase only when the analysis \emph{commits to a base after imprecision}:
+the subtyping step \(\Any^{i} \le X^{\,i+1}\) captures the coercion (assumption) that reinterprets an imprecise value as a concrete base, and increments the grade.
+Operational semantics are unchanged; grades live purely in the analysis.
 
 Two consequences follow.
-First, ranked types record—at the right granularity—\emph{how much} imprecision was assumed and (via site IDs) \emph{where} assumptions were forced.
+First, graded types record—at the right granularity—\emph{how much} imprecision was assumed and (via site IDs) \emph{where} assumptions were forced.
 Second, although the global order has infinite height, each program inhabits a finite slice:
-rank can go up only where a base is demanded after a loss of correlation, and each site is idempotent in the abstract interpretation.
+grade can go up only where a base is demanded after a loss of correlation, and each site is idempotent in the abstract interpretation.
 A standard fixed-point computation therefore converges \emph{without} bespoke widenings.
 
 \paragraph{Unfolded gradual typing.}
-Conceptually, this is an \emph{unfolded} form of gradual typing: instead of a single unknown \(?\), we expose a stratified family \(\mathsf{Any}^{0},\mathsf{Any}^{1},\ldots\) that records how many assumptions were needed.
-Standard gradual typing is recovered by \emph{collapsing} ranks (erasing \(X^{i}\mapsto X\), \(\mathsf{Any}^{i}\mapsto ?\)) and adding the usual consistency/cast machinery.
-We keep the core static and cast-free; a small extension adds rank-aware casts and a collapsed, consistency-based mode.
+Conceptually, this is an \emph{unfolded} form of gradual typing: instead of a single unknown \(?\), we expose a stratified family \(\Any^{0},\Any^{1},\ldots\) that records how many assumptions were needed.
+Standard gradual typing is recovered by \emph{collapsing} grades (erasing \(X^{i}\mapsto X\), \(\Any^{i}\mapsto ?\)) and adding the usual consistency/cast machinery.
+We keep the core static and cast-free; a small extension adds grade-aware casts and a collapsed, consistency-based mode.
 
 \paragraph{Contributions.}
 \begin{itemize}
-  \item A minimal ranked type algebra that exposes path-insensitive precision loss as an integer index on types. Joins promote to a common rank and return \(\mathsf{Any}^{r}\) for heterogeneous bases; ranks increase only at \emph{downcasts} \(\mathsf{Any}^{i}\le X^{\,i+1}\).
+  \item A minimal graded type algebra that exposes path-insensitive precision loss as a natural-number index on types. Joins promote to a common grade and return \(\Any^{r}\) for heterogeneous bases; grades increase only at \emph{coercions} \(\Any^{i}\le X^{\,i+1}\).
   \item A conventional abstract interpreter for a while-language over this domain, with monotone transfer functions and per-program convergence \emph{without} widening (per-site idempotence).
   \item Properties and diagnostics: per-program finiteness; a bounded-blame principle via ghost culprit sets that localizes assumptions to a small set of program sites; and a clear account of what the analysis guarantees (and does not).
 \end{itemize}
 
 \paragraph{Utility.}
-The immediate use case is diagnostic: instead of reporting a bare ``\(\mathsf{Any}\),'' the analyzer reports \(\mathsf{Any}^{k}\) and points to the joins/uses that forced \(k\) assumptions.
-Because rank growth is tied to identifiable choke points where a base is demanded, remediation focuses on a bounded set of locations.
+The immediate use case is diagnostic: instead of reporting a bare ``\(\Any\),'' the analyzer reports \(\Any^{k}\) and points to the joins/uses that forced \(k\) assumptions.
+Because grade growth is tied to identifiable choke points where a base is demanded, remediation focuses on a bounded set of locations.
 The scheme is unobtrusive: no runtime checks, no language changes, and no change to concrete semantics.

@@ -1,7 +1,19 @@
 \begin{abstract}
-Path-insensitive analyses are cheap but routinely lose precision at control-flow joins, collapsing distinct types to a single ``unknown.'' We make that loss explicit and quantifiable. We introduce a ranked algebra of types in which base types and \textsf{Any} carry a nonnegative rank $i$ (written $X^{i}$ and $\mathsf{Any}^{i}$). Ranks increase only when the analysis \emph{commits to a base after imprecision}, via the subtyping step $\mathsf{Any}^{i}\!\le\!X^{\,i+1}$; heterogeneous joins are conservative—after promotion to a common rank $r$, if $X\neq Y$ then $X^{r}\sqcup Y^{r}=\mathsf{Any}^{r}$. The result is a small, compositional account of where assumptions were forced and how many such assumptions a value carries.
+Path-insensitive analyses are efficient but collapse precision at control-flow joins, merging distinct types into a single ``unknown.'' 
+We make this loss explicit and quantifiable by introducing a \emph{graded} algebra of types. 
+Base types and $\Any$ carry a nonnegative grade $i$, written $X^{i}$ and $\Any^{i}$. 
+Grades increase only when an imprecise value is \emph{coerced to a base}, via the step $\Any^{i} \le X^{\,i+1}$; heterogeneous joins are conservative, yielding $\Any^{r}$ at a common grade $r$ when $X\neq Y$. 
+Thus every type carries a record of \emph{how many assumptions} have been made about it, and these increments can be attributed to specific program sites.
 
-We instantiate the domain in a conventional abstract interpreter for a while-language. Transfer functions are monotone; joins are associative/commutative/idempotent; and, although the global order has infinite height, each program inhabits a finite slice (rank can rise only at finitely many sites), so fixed-point iteration converges without widening. The analysis is a sound may-analysis: it does not prevent runtime type errors; it records and localizes imprecision. A lightweight ghost-state instrumentation yields \emph{bounded blame}: any runtime type fault is attributable to a small, computed set of program sites.
+We instantiate this graded domain in a standard abstract interpreter for a while-language. 
+Transfer functions are monotone; joins are associative, commutative, and idempotent. 
+Although the global lattice has infinite height, each program inhabits a finite slice, since grades can increase only at finitely many sites. 
+Fixed-point iteration therefore converges without widening. 
+The analysis is a sound may-analysis: it does not eliminate runtime type errors, but it records and localizes imprecision. 
+A lightweight ghost-state instrumentation yields \emph{bounded blame}: any runtime type fault can be traced to a small, computed set of program sites.
 
-Conceptually, this is an ``unfolded'' view of gradual typing: standard gradual typing is recovered by collapsing ranks ($X^{i}\mapsto X$, $\mathsf{Any}^{i}\mapsto ?$) and adding consistency/casts. We also outline conservative extensions (rank-parametric function signatures, graded effects, SSA $\phi$-site instrumentation) that reuse the same algebra. The core requires no language changes and no runtime checks.
+Conceptually, this is an ``unfolded'' view of gradual typing. 
+Standard gradual typing is recovered by collapsing grades ($X^{i}\mapsto X$, $\Any^{i}\mapsto ?$) and reintroducing consistency and casts. 
+We also sketch conservative extensions (grade-parametric function signatures, graded effects, SSA $\phi$-site instrumentation) that reuse the same algebra. 
+The core requires no language changes and no runtime checks.
 \end{abstract}

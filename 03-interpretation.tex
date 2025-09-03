@@ -1,7 +1,7 @@
 \section{Language and Abstract Interpretation}
 \label{sec:lang-ai}
 
-We use a standard \textsf{while}-language with integers, strings, and booleans. Runtime semantics are conventional and unranked; ranks appear only in the abstract domain of \S\ref{sec:types}.
+We use a standard \textsf{while}-language with integers, strings, and booleans. Runtime semantics are conventional and ungraded; grades appear only in the abstract domain of \S\ref{sec:types}.
 
 \subsection{Syntax and Concrete Semantics}
 
@@ -28,11 +28,11 @@ We omit the routine rule schemata for space.
 
 \subsection{Abstract Interpretation}
 
-We interpret programs over the ranked type lattice of \S\ref{sec:types}.
+We interpret programs over the graded type lattice of \S\ref{sec:types}.
 An \emph{abstract environment} is a map $\Gamma:\Var\to\tau$.
 Ordering and joins on environments are pointwise, using the subtyping $\le$ and join $\sqcup$ on types defined previously.
 
-\paragraph{Rank-aware coercion to a base.}
+\paragraph{Grade-aware coercion to a base.}
 For $X\in\{\Int,\String,\Bool\}$ and a type $\tau$, define the \emph{least $X$-supertype} by
 \[
 \ceil{\tau}_X \;=\; \min\nolimits_{\le}\,\{\,X^{k}\mid \tau \le X^{k}\,\}.
@@ -59,7 +59,7 @@ We write $\Gamma \vdash e : \tau$ for abstract evaluation.
   { \Gamma \vdash e : \tau' }
 \end{mathpar}
 
-\noindent Operators coerce operands to the relevant base(s) using $\ceil{\cdot}_X$ and then combine ranks via $\max$; when multiple operator interpretations apply, we join the results:
+\noindent Operators coerce operands to the relevant base(s) using $\ceil{\cdot}_X$ and then combine grades via $\max$; when multiple operator interpretations apply, we join the results:
 
 \begin{mathpar}
 \inferrule*[right=(Plus$_\Int$)]
@@ -94,7 +94,7 @@ We write $\Gamma \vdash e : \tau$ for abstract evaluation.
     \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
     \ceil{\tau_1}_X = X^{i} \quad \ceil{\tau_2}_X = X^{j} }
   { \Gamma \vdash e_1 {=} e_2 : \Bool^{\max(i,j)} }
-\qquad
+\\
 \inferrule*[right=(Eq-Join)]
   { \Gamma \vdash e_1{=}e_2 : \rho_1 \quad
     \Gamma \vdash e_1{=}e_2 : \rho_2 }
@@ -138,5 +138,5 @@ We write $\Gamma \vdash s \triangleright \Gamma'$ for the abstract transformer.
 \end{mathpar}
 
 \paragraph{Remarks.}
-All joins are those of \S\ref{sec:types} (promotion to a common rank followed by same-rank join).
-Because programs have finitely many join sites and ranks only increase at downcasts (which occur at finitely many use sites), the per-program abstract domain reachable by iteration is finite up to the program’s control-flow structure; hence Kleene iteration terminates without an additional widening.
+All joins are those of \S\ref{sec:types} (promotion to a common grade followed by same-grade join).
+Because programs have finitely many join sites and grades increase only at downcasts (which occur at finitely many use sites), the per-program abstract domain reachable by iteration is finite up to the program’s control-flow structure; hence Kleene iteration terminates without an additional widening.

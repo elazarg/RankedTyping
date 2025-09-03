@@ -4,24 +4,24 @@
 We outline directions that deepen the core while keeping it small. Each thread is orthogonal to the present design.
 
 \subsection{Logical Readings (Curry--Howard)}
-\paragraph{Ranked unknowns as logical placeholders.}
-Gradual typing admits a logic with an unknown proposition and a consistency relation. Our $\Any^{i}$ suggests a \emph{family} $\star^{i}$ annotated by a loss counter. A CH interpretation could attach evidence terms to discharge \emph{ranked obligations} (casts-with-budgets) and prove a \emph{bounded-blame} theorem parameterized by ranks/ghost sets. Open items: (i) a rank-indexed consistency/preorder; (ii) a rank-aware analogue of the gradual guarantee.
+\paragraph{Graded unknowns as logical placeholders.}
+Gradual typing admits a logic with an unknown proposition and a consistency relation. Our $\Any^{i}$ suggests a \emph{family} $\star^{i}$ annotated by a loss counter. A CH interpretation could attach evidence terms to discharge \emph{graded obligations} (casts-with-budgets) and prove a \emph{bounded-blame} theorem parameterized by grades/ghost sets. Open items: (i) a grade-indexed consistency/preorder; (ii) a grade-aware analogue of the gradual guarantee.
 
 \paragraph{Subject expansion vs.\ diagnostic completeness.}
 Reverse preservation fails with subtyping; a more realistic target is \emph{diagnostic completeness}: if a reduction gets stuck then some recorded culprit site is responsible. A proof-theoretic restatement would express this as locality of failed obligations.
 
 \subsection{Resources and Quantitative Logics}
 \paragraph{Ghost sets as permissions.}
-Ghost culprit sets resemble quantitative resources. A rank-aware connective in a quantitative (idempotent) separation logic could enable modular bounds on the union of culprit sets. Unlike fractional permissions, our sets are idempotent: revisiting the same site does not increase the budget.
+Ghost culprit sets resemble quantitative resources. A grade-aware connective in a quantitative (idempotent) separation logic could enable modular bounds on the union of culprit sets. Unlike fractional permissions, our sets are idempotent: revisiting the same site does not increase the budget.
 
 \paragraph{Cost models and budgets.}
-Treat ranks as an \emph{imprecision budget}. Explore rank-bounded modes (reject programs exceeding $k$) and synthesis/repair that minimizes maximal rank.
+Treat grades as an \emph{imprecision budget}. Explore grade-bounded modes (reject programs exceeding $k$) and synthesis/repair that minimizes maximal grade.
 
 \subsection{Effects, Grades, and Indices}
-\paragraph{Rank as a graded effect.}
+\paragraph{Grades as effects.}
 The mapping $X^{i}\mapsto X^{i+k}$ induced by a body behaves like a grade; multi-argument operators use $\max$. A semantics via graded monads/comonads or indexed effects could validate the $\max$/$+$ laws and composition.
 
-\paragraph{Rank-parametric functions.}
+\paragraph{Grade-parametric functions.}
 We sketched types like $\forall i.\ \Int^i\!\to\!\Int^{i+3}$ and $\forall i,j.\ \Any^i\times\Bool^j\!\to\!\String^{\max(i,j)+1}$. Future work: formal typing/equational theory, principal-grade inference via lightweight $\max$/$+$ constraints, and interaction with polymorphism (generalization, ambiguity).
 
 \subsection{Semantic Foundations}
@@ -33,26 +33,26 @@ Globally the order has infinite height; per program the reachable slice is finit
 
 \subsection{Recovering Precision}
 \paragraph{Correlation recovery.}
-Integrate light relational domains (selected guard sensitivity, simple equalities) to \emph{lower} ranks post hoc. A CEGAR-style loop: surface culprit sites, attempt focused refinement, iterate.
+Integrate light relational domains (selected guard sensitivity, simple equalities) to \emph{lower} grades post hoc. A CEGAR-style loop: surface culprit sites, attempt focused refinement, iterate.
 
 \paragraph{Shape-preserving joins.}
-For sums/products/containers, develop uniform shape-lifting (e.g., $\List\,\Int^0 \sqcup \List\,\String^0 = \List\,\Any^{1}$) and study interaction with rank growth.
+For sums/products/containers, develop uniform shape-lifting (e.g., $\List\,\Int^0 \sqcup \List\,\String^0 = \List\,\Any^{1}$) and study interaction with grade growth.
 
 \subsection{Algorithmics and Tooling}
 \paragraph{SSA $\phi$-sites.}
 In SSA, $\phi$-nodes are explicit choke points. Label them with site IDs and propagate ghost sets to produce actionable diagnostics.
 
 \paragraph{Inference and complexity.}
-A least-rank subsumption discipline keeps expression typing deterministic. Analyze worst-case complexity under large join degrees, and engineer incremental fixed-point solvers; quantify bounds in terms of program size and number of base-demand sites.
+A least-grade subsumption discipline keeps expression typing deterministic. Analyze worst-case complexity under large join degrees, and engineer incremental fixed-point solvers; quantify bounds in terms of program size and number of base-demand sites.
 
 \paragraph{User experience.}
 Evaluate whether bounded-blame reports (e.g., “$x$ imprecise due to sites \#7,\#12”) improve remediation compared to undifferentiated ``type is Any''.
 
 \subsection{Relations to Gradual Typing}
-Our lattice analysis remains distinct from consistency-based gradual typing. Two bridges: (i) a cast calculus with \emph{ranked casts} (blame budgets); (ii) a \emph{conservative fragment} where ranks never increase and the system coincides with a conventional static discipline. A rank-indexed gradual guarantee is open.
+Our lattice analysis remains distinct from consistency-based gradual typing. Two bridges: (i) a cast calculus with \emph{graded casts} (blame budgets); (ii) a \emph{conservative fragment} where grades never increase and the system coincides with a conventional static discipline. A grade-indexed gradual guarantee is open.
 
 \subsection{Mechanization}
 Mechanize (Coq/Agda/Isabelle): progress/preservation for the core expressions; monotonicity and convergence of the abstract interpreter (with cap/ghost product); and the bounded-blame lemma. A certified implementation can expose site IDs to the diagnostics layer.
 
 \paragraph{Summary.}
-Ranks provide a compact, compositional handle on precision loss. Connecting them to resource logics, graded effects, and CH-style obligations looks feasible and promises principled diagnostics and stronger meta-theory without bloating the core.
+Grades provide a compact, compositional handle on precision loss. Connecting them to resource logics, graded effects, and CH-style obligations looks feasible and promises principled diagnostics and stronger meta-theory without bloating the core.
