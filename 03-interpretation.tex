@@ -1,0 +1,142 @@
+\section{Language and Abstract Interpretation}
+\label{sec:lang-ai}
+
+We use a standard \textsf{while}-language with integers, strings, and booleans. Runtime semantics are conventional and unranked; ranks appear only in the abstract domain of \S\ref{sec:types}.
+
+\subsection{Syntax and Concrete Semantics}
+
+\begin{figure}[t]
+\centering
+\[
+\begin{array}{rcll}
+v &::=& n \in \mathbb{Z} \;\mid\; s \in \Sigma^* \;\mid\; \mathsf{true} \;\mid\; \mathsf{false} & \text{(values)}\\[1pt]
+e &::=& v \;\mid\; x \;\mid\; e{+}e \;\mid\; \neg e \;\mid\; e \wedge e \;\mid\; e {=} e & \text{(expressions)}\\[1pt]
+s &::=& \mathsf{skip} \;\mid\; x {:=} e \;\mid\; s; s \;\mid\; \mathsf{if}\; e\;\mathsf{then}\; s\;\mathsf{else}\; s \;\mid\; \mathsf{while}\; e\;\mathsf{do}\; s & \text{(statements)}
+\end{array}
+\]
+\vspace{-2mm}
+\caption{Syntax of the \textsf{while}-language.}
+\label{fig:syntax-while}
+\end{figure}
+
+A \emph{state} is a total map $\sigma: \Var \to (\mathbb{Z}\cup\Sigma^*\cup\{\mathsf{true},\mathsf{false}\})$.
+We write $\langle e,\sigma\rangle \Downarrow v$ for big-step expression evaluation and
+$\langle s,\sigma\rangle \Downarrow \sigma'$ for statement evaluation. The rules are standard and deterministic:
+(i) $x$ looks up $\sigma(x)$; (ii) $+$ denotes integer addition on integers and string concatenation on strings;
+(iii) $\neg,\wedge$ operate on booleans; (iv) $=$ compares values for equality and yields a boolean; (v) assignments update the state; (vi) sequencing, conditional, and while follow the textbook rules, with $\mathsf{while}\;e\;\mathsf{do}\;s$ defined via the usual unrolling into an \textsf{if}.
+We omit the routine rule schemata for space.
+
+\subsection{Abstract Interpretation}
+
+We interpret programs over the ranked type lattice of \S\ref{sec:types}.
+An \emph{abstract environment} is a map $\Gamma:\Var\to\tau$.
+Ordering and joins on environments are pointwise, using the subtyping $\le$ and join $\sqcup$ on types defined previously.
+
+\paragraph{Rank-aware coercion to a base.}
+For $X\in\{\Int,\String,\Bool\}$ and a type $\tau$, define the \emph{least $X$-supertype} (when it exists) by
+\[
+\ceil{\tau}_X \;=\; \min\nolimits_{\le}\,\{\,X^{k}\mid \tau \le X^{k}\,\}.
+\]
+Under the subtyping rules of Fig.~\ref{fig:subtyping}, $\ceil{\tau}_X$ always exists and is unique; intuitively, $\ceil{\cdot}_X$ “raises” $\tau$ to the nearest $X$-typed supertype, possibly increasing its rank.
+
+\paragraph{Abstract expressions.}
+We write $\Gamma \vdash e : \tau$ for abstract evaluation.
+
+\begin{mathpar}
+\inferrule*[right=(Lit)]
+  { }
+  { \Gamma \vdash n : \Int^{0} \qquad
+    \Gamma \vdash s : \String^{0} \qquad
+    \Gamma \vdash \mathsf{true} : \Bool^{0} \qquad
+    \Gamma \vdash \mathsf{false} : \Bool^{0} }
+
+\inferrule*[right=(Var)]
+  { \Gamma(x)=\tau }
+  { \Gamma \vdash x : \tau }
+
+\inferrule*[right=(Sub)]
+  { \Gamma \vdash e : \tau \quad \tau \le \tau' }
+  { \Gamma \vdash e : \tau' }
+\end{mathpar}
+
+\noindent Binary and unary operators are typed by coercing operands to the relevant base(s) and then combining ranks via $max$; when multiple operator interpretations apply, we join their results:
+
+\begin{mathpar}
+\inferrule*[right=(Plus$_\Int$)]
+  { \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
+    \ceil{\tau_1}_\Int = \Int^{i} \quad \ceil{\tau_2}_\Int = \Int^{j} }
+  { \Gamma \vdash e_1{+}e_2 : \Int^{max(i,j)} }
+
+\inferrule*[right=(Plus$_\String$)]
+  { \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
+    \ceil{\tau_1}_\String = \String^{i} \quad \ceil{\tau_2}_\String = \String^{j} }
+  { \Gamma \vdash e_1{+}e_2 : \String^{max(i,j)} }
+
+\inferrule*[right=(Plus-Join)]
+  { \Gamma \vdash e_1{+}e_2 : \tau_I \quad \Gamma \vdash e_1{+}e_2 : \tau_S }
+  { \Gamma \vdash e_1{+}e_2 : \tau_I \sqcup \tau_S }
+\end{mathpar}
+
+\begin{mathpar}
+\inferrule*[right=(Not)]
+  { \Gamma \vdash e:\tau \quad \ceil{\tau}_\Bool=\Bool^{i} }
+  { \Gamma \vdash \neg e : \Bool^{i} }
+\qquad
+\inferrule*[right=(And)]
+  { \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
+    \ceil{\tau_1}_\Bool=\Bool^{i} \quad \ceil{\tau_2}_\Bool=\Bool^{j} }
+  { \Gamma \vdash e_1 \wedge e_2 : \Bool^{max(i,j)} }
+\end{mathpar}
+
+\begin{mathpar}
+\inferrule*[right=(Eq$_X$)]
+  { X\in\{\Int,\String,\Bool\} \\
+    \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
+    \ceil{\tau_1}_X = X^{i} \quad \ceil{\tau_2}_X = X^{j} }
+  { \Gamma \vdash e_1 {=} e_2 : \Bool^{max(i,j)} }
+\\
+\inferrule*[right=(Eq-Join)]
+  { \Gamma \vdash e_1{=}e_2 : \rho_1 \quad
+    \Gamma \vdash e_1{=}e_2 : \rho_2 }
+  { \Gamma \vdash e_1{=}e_2 : \rho_1 \sqcup \rho_2 }
+\end{mathpar}
+
+\paragraph{Abstract statements.}
+We write $\Gamma \vdash s \triangleright \Gamma'$ for the abstract transformer.
+
+\begin{mathpar}
+\inferrule*[right=(Skip)]
+  { }
+  { \Gamma \vdash \mathsf{skip} \triangleright \Gamma }
+
+\inferrule*[right=(Assign)]
+  { \Gamma \vdash e : \tau }
+  { \Gamma \vdash x {:=} e \triangleright \Gamma[x \mapsto \tau] }
+
+\inferrule*[right=(Seq)]
+  { \Gamma \vdash s_1 \triangleright \Gamma_1 \quad
+    \Gamma_1 \vdash s_2 \triangleright \Gamma_2 }
+  { \Gamma \vdash s_1; s_2 \triangleright \Gamma_2 }
+
+\inferrule*[right=(If)]
+  { \Gamma \vdash e : \tau \quad \ceil{\tau}_\Bool=\Bool^{i} \\
+    \Gamma \vdash s_1 \triangleright \Gamma_1 \quad
+    \Gamma \vdash s_2 \triangleright \Gamma_2 }
+  { \Gamma \vdash \mathsf{if}\; e\;\mathsf{then}\; s_1\;\mathsf{else}\; s_2
+      \triangleright (\Gamma_1 \sqcup \Gamma_2) }
+\end{mathpar}
+
+\noindent Loops are treated as least fixed points of a monotone functional (Kleene iteration suffices):
+
+\begin{mathpar}
+\inferrule*[right=(While)]
+  { F(\Delta) \;=\; \Delta' \text{ where }
+    \Delta \vdash e:\tau,\ \ceil{\tau}_\Bool=\Bool^{i},\ 
+    \Delta \vdash s \triangleright \Delta' \\
+    \Gamma^\star \text{ is the least solution of } \Gamma^\star = \Gamma \sqcup F(\Gamma^\star) }
+  { \Gamma \vdash \mathsf{while}\; e\;\mathsf{do}\; s \triangleright \Gamma^\star }
+\end{mathpar}
+
+\paragraph{Remarks.}
+All joins are those of \S\ref{sec:types} (promotion to a common rank followed by same-rank join).
+Because programs have finitely many join sites and ranks only increase via such joins, the per-program abstract domain is finite up to the program’s control-flow structure; Kleene iteration therefore terminates without an additional widening.

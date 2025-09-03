@@ -1,0 +1,87 @@
+\section{Future Work}
+\label{sec:future}
+
+We outline several directions that could deepen or broaden the approach introduced here. Each thread aims to keep the core design small while tying it to established program-logical or semantic frameworks.
+
+\subsection{Logical Readings (Curry--Howard Style)}
+\paragraph{Ranked unknowns as logical placeholders.}
+Gradual typing is often read via a logic with an unknown proposition $\star$ and a consistency relation.
+Our ranked \textsf{Any}$^{i}$ suggests a \emph{family} $\star^{i}$ of unknowns annotated by a loss counter.
+A Curry--Howard interpretation could add evidence terms that discharge ``ranked obligations'' (casts-with-budgets), and a \emph{bounded-blame} theorem parameterized by the recorded ranks/ghost-sets.
+Two questions are open: (i) what is the right consistency/preorder indexed by $i$; (ii) how to formulate a \emph{gradual guarantee} analogue when ranks matter.
+
+\paragraph{Subject expansion vs.\ diagnostic completeness.}
+Since reverse preservation typically fails with subtyping, a more realistic target is a \emph{diagnostic completeness} theorem:
+if a reduction gets stuck then some earlier join in the recorded culprit-set is responsible.
+A proof-theoretic restatement (via CH) could make this a locality property for failures of proof obligations.
+
+\subsection{Resources and Quantitative Logics}
+\paragraph{Ghost sets and permissions.}
+Our ghost-set instrumentation (per variable, set of join-site IDs) resembles fractional/permission logics where assertions carry quantitative structure.
+Exploring a \emph{ranked permission} connective could allow modular reasoning:
+e.g., composing analyses while bounding the union of culprit sets.
+Unlike fractional permissions (additive shares), our sets are idempotent---visiting the same site twice does not increase the budget---but quantitative separation logic provides tools for such idempotent resources.
+
+\paragraph{Cost models.}
+Treating ranks as a static \emph{imprecision budget} suggests links to quantitative type systems (amortized analysis, bounded linear logic).
+One can ask for \emph{rank-bounded} variants (reject programs that exceed $k$ lossy merges), or synthesis problems that \emph{minimize} the maximal rank.
+
+\subsection{Effects, Graded Structures, and Indices}
+\paragraph{Rank as an effect.}
+The mapping $\text{base}^i \mapsto \text{base}^{i+k}$ induced by a function body behaves like a graded effect.
+A semantics via graded monads/comonads (or indexed effect systems) could give modular composition laws (e.g., $\max$ or $+$ on grades) that match the algebra of joins.
+
+\paragraph{Rank-parametric functions.}
+A distinct system with types like $\forall i.\ \textsf{Int}^i \to \textsf{Int}^{i+3}$ or $\forall i,j.\ \textsf{Any}^i \times \textsf{Bool}^j \to \textsf{String}^{\max(i,j)+1}$ was sketched.
+Future work: formal typing/equational theory, inference via lightweight grade constraints, and interaction with polymorphism (principal grades, generalization, and ambiguity).
+
+\subsection{Semantic Foundations}
+\paragraph{Abstract-interpretation semantics.}
+A Galois-connection account that makes the analysis join (promotion-then-merge) explicit would separate:
+(i) the subtyping poset used for coercions; and
+(ii) the analysis semilattice used for fixed points.
+This clarifies why the analysis join is \emph{not} the $\le$-LUB and how soundness follows from monotonicity plus per-program finiteness.
+
+\paragraph{Domain theory with per-program slices.}
+Globally the order has infinite height; per program the reachable slice is finite.
+Capturing this with step-indexed or compact elements could yield a denotational model where loop semantics are standard least fixed points without extra widenings.
+
+\subsection{Recovering Precision}
+\paragraph{Correlation recovery.}
+Ranks measure lost correlation; integrating light relational domains (e.g., two-variable equalities, symbolic guards) or guard-sensitivity at selected sites could \emph{lower} ranks post-hoc.
+A counterexample-guided loop (generate culprit sites from ghost sets; attempt focused refinement) is a practical path.
+
+\paragraph{Shape-preserving joins for richer types.}
+For sums/products/containers, shape-preserving precision (e.g., $\textsf{List}\ \textsf{Int}^0 \sqcup \textsf{List}\ \textsf{String}^0 = \textsf{List}\ \textsf{Any}^1$) can be developed systematically.
+Future work: a uniform theory of shape-lifting operations and their interaction with rank.
+
+\subsection{Algorithmics and Tooling}
+\paragraph{SSA and $\phi$-nodes.}
+In SSA, $\phi$-nodes are explicit choke points.
+An implementation could label $\phi$ nodes with site IDs and produce ranked types plus culprit sets for developer-facing diagnostics.
+
+\paragraph{Type inference and complexity.}
+A principal-derivation discipline (least-rank subsumption) keeps inference deterministic.
+Analyzing worst-case complexity under large join degrees, and engineering incremental solvers for fixed points, are concrete next steps.
+
+\paragraph{User experience.}
+Ranks enable actionable messages: ``value $x$ is imprecise due to joins at sites \#7 and \#12.''
+Evaluating whether such bounded-blame reports help fix real bugs---compared to traditional ``type is Any''---is an empirical agenda.
+
+\subsection{Relations to Gradual Typing}
+Our lattice-based analysis remains distinct from consistency-based gradual typing.
+Still, two transfer points are promising:
+(i) a cast calculus with \emph{ranked casts} (blame budgets);
+(ii) a \emph{conservative fragment} where ranks never increase and the system coincides with an ordinary static type system.
+Determining whether a rank-indexed ``gradual guarantee'' is meaningful is open.
+
+\subsection{Mechanization}
+Mechanized metatheory (e.g., Coq/Agda/Isabelle) would pin down:
+progress/preservation for the core expression fragment,
+monotonicity and convergence of the abstract interpreter,
+and the bounded-blame lemma via ghost sets.
+A certified implementation could expose the site IDs carried by proofs to the diagnostic layer.
+
+\paragraph{Summary.}
+The rank annotation provides a compact handle on precision loss.
+Bringing it into contact with resource logics, graded effects, and CH-style proof obligations looks feasible and could yield principled diagnostics, optimization opportunities, and stronger meta-theory without bloating the core design.

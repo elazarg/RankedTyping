@@ -1,0 +1,20 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Gradual typing and its foundations.}
+Gradual typing provides a principled account of mixing static and dynamic typing \cite{SiekTaha2006}. Subsequent work articulated meta-theoretic criteria such as the \emph{Gradual Guarantee} and precision monotonicity \cite{SiekGarciaTaha2015}, and gave an abstract interpretation of gradual typing itself, via Galois connections between static and dynamic worlds \cite{GarciaClarkTanter2016}. More recently, \emph{Gradual Type Theory} axiomatizes casts, the dynamic type, and the gradual guarantee in a type-theoretic setting, supplying logical tools to reason about equivalence and optimization in gradual languages \cite{NewLicataAhmed2021}. Our proposal is deliberately cast-free and purely static: instead of a single collapsed unknown, we expose an \emph{unfolded} family (ranks) that measures analysis imprecision without altering operational semantics.
+
+\paragraph{Gradual effect and annotation systems.}
+Generalizations of gradual typing beyond simple types include gradual type-and-effect systems \cite{BanadosSchwerterGarciaTanter2016} and frameworks to gradualize annotated type systems \cite{ThiemannFennell2014}. These accounts quantify imprecision in effects or annotations through a single dynamic element (often written $?$) and consistency. In contrast, our ranks stratify imprecision arithmetically, recording how many assumptions were needed, while retaining a conventional meet/join discipline.
+
+\paragraph{Blame calculi and static blame.}
+The blame calculus connects gradual/hybrid typing with higher-order contracts and proves the blame theorem: when casts fail, responsibility lies on the less-precisely typed side \cite{WadlerFindler2009}. Polymorphic extensions preserve these guarantees \cite{AhmedFindlerSiekWadler2011}. Recent work studies \emph{static blame} analyses that predict potential blame without running programs \cite{SuCulpepper2024}. Our setting shares the diagnostic spirit but does not introduce casts or contract boundaries; the rank is a static, flow-sensitive measure of precision loss at control-flow joins.
+
+\paragraph{Soft and quasi-static typing.}
+Soft typing \cite{CartwrightFagan1991} and quasi-static typing \cite{Thatte1990} prefigure many aims of today’s gradual typing: they infer permissive types and insert checks as needed, often around a greatest element (e.g.\ $\Omega$ or \textsf{Dyn}). Compared with these lines, our analysis remains fully static and is not a source-to-source transformation; the quantitative information is recorded as a rank in the abstract domain rather than as inserted run-time checks.
+
+\paragraph{Typed/untyped interoperation via “like” types.}
+Thorn’s \emph{like types} permit fine-grained interoperation between typed and untyped code while retaining optimization potential in typed regions \cite{WrigstadEtAl2010}. This work is complementary to ours: it proposes language constructs and run-time checks for interoperability, whereas we supply a static accounting of precision loss that can inform where such boundaries matter.
+
+\paragraph{Abstract interpretation.}
+Methodologically, our analysis is a standard monotone, flow-sensitive abstract interpretation \cite{CousotCousot1977}. The novelty is in the abstract domain: a program-specific, finitely ascending “unfolded” lattice where rank increases only at finitely many join sites (idempotent per site). Thus, fixed points exist without bespoke widenings; the diagnostic information (ranks and sites) is exposed rather than collapsed.

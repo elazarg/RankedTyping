@@ -1,0 +1,196 @@
+\section{Illustrative Examples}
+\label{sec:examples}
+
+We illustrate abstract execution over the ranked-type lattice (types as in \S\ref{sec:types}).  
+In each example we write abstract environments as
+$\Gamma = \{\, x : \textsf{Int}^{0},\; b : \textsf{Bool}^{0},\;\dots \,\}$
+and update them pointwise. Joins and rank promotion follow \S\ref{sec:types}.
+
+\paragraph{Example 1 (literal assignment).}
+\begin{quote}\ttfamily
+x := 5
+\end{quote}
+Initial $\Gamma_0$ arbitrary.  
+Typing $5:\textsf{Int}^{0}$, assignment yields
+\[
+\Gamma_1 \;=\; \Gamma_0[\,x \mapsto \textsf{Int}^{0}\,].
+\]
+
+\paragraph{Example 2 (simple heterogeneous branch).}
+\begin{quote}\ttfamily
+if b then x := 5 else x := "hi"
+\end{quote}
+Assume $\Gamma_0$ with $b:\textsf{Bool}^{0}$.  
+Then-branch gives $x:\textsf{Int}^{0}$, else-branch gives $x:\textsf{String}^{0}$.  
+Join at $x$ (same rank, different bases) yields
+\[
+\Gamma_1 \;=\; \Gamma_0[\,x \mapsto \textsf{Any}^{1}\,].
+\]
+
+\paragraph{Example 3 (correlated branches, safe at runtime).}
+\begin{quote}\ttfamily
+if b then x := 5 else x := "hello";\\
+if b then x := x + 2 else x := x + "world"
+\end{quote}
+After the first \texttt{if}: $x:\textsf{Any}^{1}$ (as above).  
+Second \texttt{if}: each branch coerces $x$ to the needed base at rank $1$,
+computes $\textsf{Int}^{1}$ or $\textsf{String}^{1}$, then the branch join yields
+\[
+\Gamma_2 \;=\; \Gamma_0[\,x \mapsto \textsf{Any}^{2}\,].
+\]
+
+\paragraph{Example 4 (swapped addends, unsafe at runtime; same abstract result).}
+\begin{quote}\ttfamily
+if b then x := 5 else x := "hello";\\
+if b then x := x + "world" else x := x + 2
+\end{quote}
+Analysis identical to Example~3: after the first join $x:\textsf{Any}^{1}$, each branch
+locally coerces to the needed base at rank $1$, and the outer join gives
+\[
+\Gamma_2 \;=\; \Gamma_0[\,x \mapsto \textsf{Any}^{2}\,].
+\]
+
+\paragraph{Example 5 (uniform loop).}
+\begin{quote}\ttfamily
+x := 0;\\
+while c do x := x + 1
+\end{quote}
+$x:\textsf{Int}^{0}$ after initialization; loop body preserves $\textsf{Int}^{0}$;
+fixed point at the loop head is $\textsf{Int}^{0}$:
+\[
+\Gamma_{\!*} \;=\; \Gamma_0[\,x \mapsto \textsf{Int}^{0}\,].
+\]
+
+\paragraph{Example 6 (heterogeneous loop).}
+\begin{quote}\ttfamily
+if b then x := 0 else x := "a";\\
+while c do if d then x := x + 1 else x := x + "b"
+\end{quote}
+After the first \texttt{if}: $x:\textsf{Any}^{1}$.  
+Loop body: inner \texttt{if} joins $\textsf{Int}^{1}$ and $\textsf{String}^{1}$ to $\textsf{Any}^{2}$;
+joining with the loop head input stabilizes at $\textsf{Any}^{2}$:
+\[
+\Gamma_{\!*} \;=\; \Gamma_0[\,x \mapsto \textsf{Any}^{2}\,].
+\]
+
+\paragraph{Example 7 (nested conditionals, one effective choke point).}
+\begin{quote}\ttfamily
+if b then if c then x := 1 else x := "a"\\
+\phantom{if b\ } else if d then x := "b" else x := 2
+\end{quote}
+Both sides of the outer \texttt{if} yield $x:\textsf{Any}^{1}$; outer join preserves that:
+\[
+\Gamma_1 \;=\; \Gamma_0[\,x \mapsto \textsf{Any}^{1}\,].
+\]
+
+\paragraph{Example 8 (booleans and equality).}
+\begin{quote}\ttfamily
+x := (1 = 2);\\
+y := ("a" = "a")
+\end{quote}
+Equality coerces both operands to the same base at rank $0$ and produces booleans at rank $0$:
+\[
+\Gamma_1 \;=\; \Gamma_0[\,x \mapsto \textsf{Bool}^{0},\; y \mapsto \textsf{Bool}^{0}\,].
+\]
+
+\paragraph{Example 9 (string concatenation).}
+\begin{quote}\ttfamily
+x := "a";\quad y := "b";\quad z := x + y
+\end{quote}
+Both operands are $\textsf{String}^{0}$; result $\textsf{String}^{0}$:
+\[
+\Gamma_1 \;=\; \Gamma_0[\,x \mapsto \textsf{String}^{0},\;
+                       y \mapsto \textsf{String}^{0},\;
+                       z \mapsto \textsf{String}^{0}\,].
+\]
+
+\paragraph{Example 10 (mixing bases through a later join).}
+\begin{quote}\ttfamily
+if b then x := 1 else x := "a";\\
+y := x;\\
+if c then y := x else y := x
+\end{quote}
+After the first \texttt{if}: $x:\textsf{Any}^{1}$.  
+Copy $y:=x$ gives $y:\textsf{Any}^{1}$.  
+The final \texttt{if} does not change types (both branches identical);
+overall
+\[
+\Gamma_1 \;=\; \Gamma_0[\,x \mapsto \textsf{Any}^{1},\; y \mapsto \textsf{Any}^{1}\,].
+\]
+
+\paragraph{Example 11 (guard typing is orthogonal).}
+\begin{quote}\ttfamily
+if (1 = 1) then x := "ok" else x := "ko"
+\end{quote}
+The guard yields $\textsf{Bool}^{0}$; branches both give $\textsf{String}^{0}$; join preserves $\textsf{String}^{0}$:
+\[
+\Gamma_1 \;=\; \Gamma_0[\,x \mapsto \textsf{String}^{0}\,].
+\]
+
+\paragraph{Example 12 (cross-rank absorption with a precise base).}
+\begin{quote}\ttfamily
+if b then x := 1 else x := "a";\\
+y := 0;\\
+if c then x := x else x := y
+\end{quote}
+After the first \texttt{if}: $x:\textsf{Any}^{1}$.  
+$y:\textsf{Int}^{0}$.  
+At the last \texttt{if}, joining $x:\textsf{Any}^{1}$ with $y:\textsf{Int}^{0}$ (promoted to $\textsf{Any}^{1}$) leaves $x:\textsf{Any}^{1}$.
+
+\paragraph{Example 13 (disjoint effects on different variables).}
+\begin{quote}\ttfamily
+if b then x := 1 else x := "a";\quad
+if c then y := true else y := false
+\end{quote}
+Final environment:
+\[
+\Gamma_1 \;=\; \Gamma_0[\,x \mapsto \textsf{Any}^{1},\; y \mapsto \textsf{Bool}^{0}\,].
+\]
+
+\paragraph{Example 14 (branch-local refinement, global imprecision).}
+\begin{quote}\ttfamily
+if b then x := 1 else x := "a";\\
+if b then z := x + 2 else z := x + "b"
+\end{quote}
+Local coercions in each branch produce $\textsf{Int}^{1}$ or $\textsf{String}^{1}$ for $z$; the branch join yields $z:\textsf{Any}^{2}$; $x$ remains $\textsf{Any}^{1}$.
+
+\paragraph{Example 15 (loop head as a choke point).}
+\begin{quote}\ttfamily
+x := 0;\\
+while c do if d then x := x + 1 else x := x + 1
+\end{quote}
+Both inner branches agree ($\textsf{Int}^{0}$); loop head join preserves $\textsf{Int}^{0}$.
+
+\paragraph{Example 16 (loop with branch-induced escalation).}
+\begin{quote}\ttfamily
+x := 0;\\
+while c do if d then x := x + 1 else x := "b"
+\end{quote}
+Body joins $\textsf{Int}^{0}$ and $\textsf{String}^{0}$ to $\textsf{Any}^{1}$; fixed point at the head is $x:\textsf{Any}^{1}$.
+
+\paragraph{Example 17 (boolean loop).}
+\begin{quote}\ttfamily
+x := true;\\
+while c do x := $\neg$ x
+\end{quote}
+Invariant $\textsf{Bool}^{0}$; no rank change.
+
+\paragraph{Example 18 (propagating imprecision through copy and use).}
+\begin{quote}\ttfamily
+if b then x := 1 else x := "a";\quad y := x;\\
+z := (y = y)
+\end{quote}
+$x:\textsf{Any}^{1}$, $y:\textsf{Any}^{1}$.  
+Equality coerces both operands to the same base at rank $1$ and yields $z:\textsf{Bool}^{1}$.
+
+\paragraph{Example 19 (multiple variables through one choke point).}
+\begin{quote}\ttfamily
+if b then \{ x := 1; y := "a" \} else \{ x := "b"; y := 2 \}
+\end{quote}
+Pointwise join yields $x:\textsf{Any}^{1}$ and $y:\textsf{Any}^{1}$.
+
+\paragraph{Example 20 (no-op branches, no escalation).}
+\begin{quote}\ttfamily
+x := "a";\quad if b then x := x else x := x
+\end{quote}
+Both branches preserve $\textsf{String}^{0}$; join preserves $\textsf{String}^{0}$.

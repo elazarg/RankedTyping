@@ -1,0 +1,185 @@
+\section{Extensions}
+\label{sec:extensions}
+
+We sketch several conservative extensions of the core system. Each is named and can be adopted independently.
+
+\subsection{\textsc{E1: Rank–Parametric Function Signatures \& Inference}}
+\paragraph{Types.}
+Augment types with (first–order) function arrows and rank quantification:
+\[
+\tau ::= \cdots \;\mid\; \tau \to \tau 
+\qquad\qquad
+\sigma ::= \forall \vec{i}.\ \tau
+\]
+where rank variables range over $\mathbb{N}$ and may appear in superscripts.
+Typical shapes:
+\[
+\forall i.\ X^{i} \to X^{\,i+\alpha}
+\qquad
+\forall i,j.\ X^{i}\times Y^{j} \to Z^{\,\max(i,j)+\beta}
+\]
+with fixed nonnegative \emph{rank shifts} $\alpha,\beta \in \mathbb{N}$.
+
+\paragraph{Examples.}
+\begin{align*}
+\textsf{id}_X &: \forall i.\ X^{i} \to X^{i} 
+\\
+\textsf{add1} &: \forall i.\ \textsf{Int}^{i} \to \textsf{Int}^{i}
+\\
+\textsf{concat\_a} &: \forall i.\ \textsf{String}^{i} \to \textsf{String}^{i}
+\\
+\textsf{downcast}_X &: \forall i.\ \textsf{Any}^{i} \to X^{\,i+1} \quad\text{(checked cast; adds one rank)}
+\\
+\textsf{mix} &: \forall i,j.\ \textsf{Int}^{i}\times \textsf{String}^{j} \to \textsf{Any}^{\,\max(i,j)+1}
+\end{align*}
+
+\paragraph{Composition law.}
+If $f:\forall i.\ X^{i}\!\to\! X^{\,i+\alpha}$ and $g:\forall i.\ X^{i}\!\to\! X^{\,i+\beta}$,
+then $f\circ g:\forall i.\ X^{i}\!\to\! X^{\,i+\alpha+\beta}$.
+For binary forms, rank shifts compose with $\max$ in the obvious way:
+if $h:\forall i,j.\ X^{i}\times Y^{j}\to Z^{\,\max(i,j)+\gamma}$ and
+$k:\forall i.\ Z^{i}\to Z^{\,i+\delta}$, then
+$k\circ h:\forall i,j.\ X^{i}\times Y^{j}\to Z^{\,\max(i,j)+\gamma+\delta}$.
+
+\paragraph{Typing (sketch).}
+Application instantiates rank variables with concrete ranks from the argument types,
+then checks subtyping on bases and enforces the rank output equation given by the signature
+(e.g., $i'\!=\!i{+}\alpha$, or $k'\!=\!\max(i,j){+}\beta$).
+
+\paragraph{Inference.}
+Associate unknown nonnegative shifts (e.g., $\alpha,\beta,\dots$) to function bodies and generate constraints from each use:
+\[
+r_{\text{out}} \;\ge\; r_{\text{in}} + \alpha
+\qquad\text{or}\qquad
+r_{\text{out}} \;\ge\; \max(r_1,r_2) + \beta
+\]
+together with base-type constraints.
+Solve the resulting monotone system over $(\mathbb{N},\le)$ using least solutions
+(e.g., Kleene iteration on $\max$/$+$ constraints); the \emph{principal} signature takes the least satisfying shifts.
+
+\medskip
+
+\subsection{\textsc{E2: Rank as an Effect (Graded)}}
+Treat “rank increase” as an effect grade.
+A typing judgment carries a grade $g\in\mathbb{N}$; arrows become graded:
+\(
+\Gamma \vdash e : \tau \;!\; g
+\)
+and composition obeys $g$-addition while multi-argument operators use $g=\max$.
+This yields a small-step algebra matching the rank equations in \textsc{E1}.
+
+\subsection{\textsc{E3: Bounded–Rank Modes}}
+Introduce a modal cap $\square_{\le k}$ that restricts programs (or interfaces) to yield ranks $\le k$.
+Useful for “precision budgets” and for rejecting overly imprecise code at module boundaries.
+
+\subsection{\textsc{E4: Rank–Aware Cast Calculus}}
+Add explicit casts $\langle \tau \Rightarrow \tau'\rangle e$ with types such as
+$\forall i.\ \textsf{Any}^{i} \to X^{\,i+1}$,
+and a runtime that either succeeds (raising rank by $+1$) or signals a checked failure.
+This supports a \emph{bounded blame} story where failures are charged to specific cast sites.
+
+\subsection{\textsc{E5: Shape–Preserving Joins for Data Types}}
+Extend the lattice structurally:
+\[
+\textsf{List}\ X^{i} \;\sqcup\; \textsf{List}\ Y^{j}
+\;=\; \textsf{List}\ \textsf{Any}^{\,\max(i,j)+[X\neq Y]}
+\]
+(and analogously for products/sums), lifting the base rule into type constructors.
+
+\subsection{\textsc{E6: SSA \& \texorpdfstring{$\phi$}{phi}–Site Instrumentation}}
+In SSA, $\phi$–nodes are explicit choke points.
+Label them with site IDs, propagate \emph{ghost culprit sets} alongside ranks, and surface precise diagnostics:
+“$x$ imprecise due to $\phi$ at blocks \#7,\#12”.
+
+\subsection{\textsc{E7: Correlation Recovery (Selective Refinement)}}
+Augment the analysis with lightweight relational facts (e.g., guard-sensitivity at chosen joins),
+allowing post–join refinement that can \emph{lower} computed ranks without changing the core lattice.
+
+\subsection{\textsc{E8: Higher–Order Rank Polymorphism}}
+Generalize \textsc{E1} to higher order:
+\[
+\textsf{map} : \forall i.\ (\textsf{Int}^{i}\!\to\!\textsf{Int}^{\,i+\alpha}) \to
+(\textsf{List}\ \textsf{Int})^{i} \to (\textsf{List}\ \textsf{Int})^{\,i+\alpha}
+\]
+with inference propagating the shift $\alpha$ through higher-order uses.
+
+\subsection{\textsc{E9: Interop with Gradual Typing}}
+Keep our lattice (joins, ranks) but add a consistency–based unknown $\star$ and casts.
+Rank–aware casts (as in \textsc{E4}) could supply \emph{budgets} to a gradual system, while preserving our per–program convergence guarantees.
+
+\subsection{\textsc{E10: Gradual Mode (Collapse \& Consistency)}}
+
+\paragraph{Erasure.}
+Define a collapse/erasure from ranked to gradual types by
+\[
+\mathrm{erase}(\mathsf{Int}^{i})=\mathsf{Int},\quad
+\mathrm{erase}(\mathsf{String}^{i})=\mathsf{String},\quad
+\mathrm{erase}(\mathsf{Bool}^{i})=\mathsf{Bool},\quad
+\mathrm{erase}(\mathsf{Any}^{i})=?,
+\]
+extended homomorphically over type constructors (products, sums, lists, \dots).
+
+\paragraph{Consistency.}
+On erased types, a standard consistency relation \(A \mathrel{\sim} B\) holds iff
+(i) \(A=B\); or (ii) either side is \(?\); or (iii) type constructors match and components are pairwise consistent.
+This is symmetric and shape-directed (not a subtyping order).
+
+\paragraph{Casts and dynamics.}
+Add explicit casts \(\langle \tau \Rightarrow \tau'\rangle e\).
+Evaluation inserts runtime checks against the \emph{erased} target \(\mathrm{erase}(\tau')\);
+failures raise \emph{blame} at the cast site.
+The rank-aware downcast from \textsc{E4} is a typed form
+\(\forall i.\ \mathsf{Any}^{i} \to X^{\,i+1}\);
+the collapsed mode also admits unranked casts by erasure.
+
+\paragraph{Precision join correspondence.}
+For base/shape-preserving cases,
+\[
+\mathrm{erase}(\tau_1 \sqcup \tau_2)
+\;=\;
+\mathrm{erase}(\tau_1)\ \sqcup_{\!\sim}\ \mathrm{erase}(\tau_2),
+\]
+where \(\sqcup_{\!\sim}\) is the usual precision join in gradual typing (e.g., \(\mathsf{Int}\sqcup_{\!\sim}\mathsf{String}=?\), and constructors lift \(?\) componentwise).
+
+\paragraph{Obligations (left to future work).}
+(i) \emph{Conservative extension}: erasure of a purely static program is well-typed in the gradual mode. 
+(ii) \emph{Blame/coherence}: standard cast meta-theory over the erased core. 
+(iii) \emph{Gradual guarantee}: precision monotonicity phrased on erased types. 
+(iv) \emph{Embedding}: the ranked system embeds into the gradual system by \(\mathrm{erase}\); the reverse picks finite-rank representatives.
+
+\subsection{\textsc{E11: Metric Toggle — Downcast vs.\ Merge Counting}}
+
+Our core uses the \emph{downcast-counting} metric:
+heterogeneous same-rank joins return \(\Any^{r}\) (no bump), and ranks increase only at subtyping steps \(\Any^{i}\le X^{\,i+1}\) when a base is demanded.
+For completeness, we note an alternative \emph{merge-counting} variant and their relationship.
+
+\paragraph{Downcast-counting (core).}
+Subtyping generators:
+\[
+\inferrule*{ }{X^{i}\le \Any^{i}}
+\qquad
+\inferrule*{ }{\Any^{i}\le X^{\,i+1}}
+\quad(i\in\mathbb{N},\ X\in\{\Int,\String,\Bool\})
+\]
+Join (analysis-time LUB w.r.t.\ \(\le\)): promote to common rank \(r\), then
+\(X^{r}\sqcup Y^{r}=\Any^{r}\) for \(X\neq Y\), and \(\Any^{r}\) absorbs.
+
+\paragraph{Merge-counting (alternative).}
+Same subtyping as the core, but analysis join \emph{increments} on heterogeneous bases:
+after promotion to rank \(r\), set \(X^{r}\sqcup Y^{r}=\Any^{\,r+1}\) for \(X\neq Y\).
+Downcasts \(\Any^{i}\le X^{i}\) do not raise rank in this variant.
+
+\paragraph{Equivalence up to shift (informal).}
+For straight-line code that immediately demands a base after each loss of correlation, both metrics produce the same ranks up to a constant shift.
+When imprecision is carried without commitment (values remain at \(\Any\) across joins), the metrics diverge:
+merge-counting increments at the join; downcast-counting increments later, at the first demanded base.
+Both variants preserve per-program finiteness and the bounded-blame story (culprit sets attach to, respectively, join sites vs.\ use sites).
+
+\paragraph{Choosing a metric.}
+Downcast-counting aligns ranks with \emph{assumptions the analyzer had to make} at concrete use sites (casts/coercions);
+merge-counting aligns ranks with \emph{where correlation was lost} in control flow.
+Either can be selected without changing the concrete semantics or the core lattice; only the analysis join and the intended diagnostic narrative differ.
+
+\paragraph{Summary.}
+\textsc{E1} makes ranks first–class in function specifications with a simple, solvable constraint language.
+\textsc{E2}–\textsc{E9} explore orthogonal axes—effects, budgets, casts, richer types, SSA integration, precision recovery, higher order, and interop—without disturbing the core algebra.
