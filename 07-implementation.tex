@@ -1,0 +1,15 @@
+\section{Implementation and Validation}
+\label{sec:implementation}
+
+To validate the practicality and correctness of the graded type algebra and abstract interpretation, we developed a proof-of-concept implementation in OCaml. The implementation directly models the formalisms presented in this paper, including the core type system (\S\ref{sec:types}), the abstract interpreter for the \textsf{while}-language (\S\ref{sec:lang-ai}), and the ghost-set mechanism for bounded blame diagnostics (\S\ref{sec:properties}).
+
+\paragraph{Structure.}
+The implementation is structured into modules that correspond directly to the key concepts: a module for the type definitions and grade logic, separate modules for the subtyping and join operations, and a recursive abstract interpreter. This modularity confirms that the formal components are separable and map cleanly to a software architecture. The full source code is available for review.\footnote{URL to be added upon publication.}
+
+\paragraph{Validation.}
+We validated the implementation through two complementary methods. First, all illustrative examples from \S\ref{sec:examples} were encoded as unit tests, confirming that the interpreter produces the expected graded types for common programming patterns.
+
+Second, and more significantly, we used property-based testing (via the QCheck library) to validate the algebraic properties of the type lattice. The tests automatically generated hundreds of arbitrary type pairs and triplets to verify that the join operator is associative, commutative, and idempotent, and that the subtyping relation is reflexive and antisymmetric (i.e., forms a proper partial order).
+
+\paragraph{Implementation-Informed Theory.}
+The process of implementing the system and verifying it with property-based tests provided valuable feedback on the formalism itself. For instance, initial tests revealed an ambiguity in the subtyping rules concerning the top-like grade $\Any^{\infty}$. The property-based test for antisymmetry failed on the pair $(\Int^{\infty}, \Any^{\infty})$, forcing a refinement of the rule $\Any^{i} \le X^{i+1}$ to apply only to finite grades $i \in \mathbb{N}$ --- which is always the case in our current intra-procedural implementation. This demonstrates the value of the implementation as a tool for rigorously checking the corner cases and completeness of the theory.
