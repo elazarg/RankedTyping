@@ -90,10 +90,35 @@ The numeric grade exposed to users can be $\min(|R|,K)$ for a chosen cap $K$.
 \smallskip
 Either approach preserves soundness; (B) additionally supports precise diagnostics (below).
 
+\paragraph{Attribution bound (grades by coercion sites).}
+We formalize the intuition that grades count forced assumptions at uses.
+
+\begin{definition}[Coercion-forcing site]
+A program point $q$ (occurrence of a primitive or context demanding base $X$) is \emph{coercion-forcing} for a variable $x$ if, in the incoming environment $\Delta$ at $q$, some subexpression $e$ reads $x$ with type $\tau=\Delta(x)$ and $\ceil{\tau}_X > \tau$ in $\le$ (i.e., $x$ is not already of base $X$ at some grade).
+In this case evaluating $T_q$ performs a downcast step contributing $+1$ to the grade of the result along that use.
+\end{definition}
+
+\begin{definition}[Pathwise coercion set]
+For a program point $p$ and variable $x$, let $C_p(x)$ be the set of distinct coercion-forcing sites for $x$ that occur on some control-flow path ending at $p$.
+\end{definition}
+
+\begin{theorem}[Attribution bound]
+\label{thm:attribution}
+Let $\Gamma_p$ be the least fixed-point environment at program point $p$.
+Then for every variable $x$, if $\Gamma_p(x)$ has finite rank $r$, we have
+\[
+r \;\le\; |C_p(x)|.
+\]
+Moreover, if the analysis is instrumented to record the first visit to each coercion-forcing site (cf.\ §\ref{sec:properties}, Diagnostics), then every unit increase in $r$ is justified by some site in $C_p(x)$ (up to idempotence under repeated visits).
+\emph{Sketch.} Induct on path length and fixed-point iteration.
+Joins never raise ranks; the only rule that increases rank is a coercion at a coercion-forcing site, which contributes at most $+1$ per distinct site.
+Since paths to $p$ encounter only finitely many program points, the bound follows.
+\end{theorem}
+
 \subsection{Diagnostics: bounded blame via ghost sets}
 
-Instrument the analysis with ghost sets $R_x\subseteq J$ for each variable $x$ (where $J$ is the finite set of program sites that force a base after imprecision or merge flows).
-At a join site $j$, set $R_x \leftarrow R_x^{\mathrm{then}}\cup R_x^{\mathrm{else}}\cup\{j\}$ pointwise.
+\textbf{Instrument the analysis with ghost sets $R_x\subseteq J$ for each variable $x$ (where $J$ is the finite set of program sites that force a base after imprecision or merge flows).
+At a join site $j$, set $R_x \leftarrow R_x^{\mathrm{then}}\cup R_x^{\mathrm{else}}\cup\{j\}$ pointwise.}
 At a downcast site $k$, set $R_x \leftarrow R_x\cup\{k\}$.
 If a concrete run faults at a use of operands $\vec{e}$ at program point $p$, then some $j\in \bigcup R_{\vec{e}}(p)$ lies on the reaching-use history of a faulting operand.
 Thus the number of candidate sites to inspect is bounded by $|\bigcup R_{\vec{e}}(p)|$.

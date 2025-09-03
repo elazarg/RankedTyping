@@ -1,9 +1,8 @@
 \begin{abstract}
-Path-insensitive analyses are efficient but collapse precision at control-flow joins, merging distinct types into a single ``unknown.'' 
-We make this loss explicit and quantifiable by introducing a \emph{graded} algebra of types. 
-Base types and $\Any$ carry a nonnegative grade $i$, written $X^{i}$ and $\Any^{i}$. 
-Grades increase only when an imprecise value is \emph{coerced to a base}, via the step $\Any^{i} \le X^{\,i+1}$; heterogeneous joins are conservative, yielding $\Any^{r}$ at a common grade $r$ when $X\neq Y$. 
-Thus every type carries a record of \emph{how many assumptions} have been made about it, and these increments can be attributed to specific program sites.
+Path-insensitive analyses are cheap but routinely lose precision at joins, collapsing heterogeneous flows to an opaque “unknown.”
+We make that loss explicit and quantifiable.
+The key insight is a gradeed algebra of types where base types and $\Any$ carry a nonnegative grade $i$; grades increase \emph{only} when a use forces a base after imprecision (the subtyping step $\Any^{i}\!\le\!X^{i+1}$), while heterogeneous joins are conservative ($X^{r}\sqcup Y^{r}=\Any^{r}$ after promotion).
+Instantiated in a conventional abstract interpreter, grades act as a small, compositional signal of \emph{how much} and \emph{where} assumptions were forced.
 
 We instantiate this graded domain in a standard abstract interpreter for a while-language. 
 Transfer functions are monotone; joins are associative, commutative, and idempotent. 

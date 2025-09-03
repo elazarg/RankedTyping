@@ -98,6 +98,9 @@ For all $i\le j$ in $\mathbb{N}$ and $X\in\{\Int,\String,\Bool\}$:
 \paragraph{Reading grades.}
 With $\Any^{\bot}$ as a formal bottom, a finite grade $k\ge 0$ records the number of \emph{downcast assumptions} (steps of $\Any^{i}\le X^{i+1}$) witnessed so far along the abstract flow.
 Once at $\Any^{k}$, further joins at grade $\le k$ do not escalate the grade; escalation requires a new downcast at or above grade $k$.
+By convention, $\Any^{0}$ denotes imprecision \emph{without any forced assumption yet}:
+merging heterogeneous bases at a join yields $\Any^{0}$ (after promotion), but grades increase only when a base is \emph{demanded} and a downcast $\Any^{i}\le X^{i+1}$ is taken.
+Thus joins alone do not raise grades; uses that require a base do.
 
 \medskip
 This section defines only the graded type algebra.

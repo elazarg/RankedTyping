@@ -140,3 +140,9 @@ We write $\Gamma \vdash s \triangleright \Gamma'$ for the abstract transformer.
 \paragraph{Remarks.}
 All joins are those of \S\ref{sec:types} (promotion to a common grade followed by same-grade join).
 Because programs have finitely many join sites and grades increase only at downcasts (which occur at finitely many use sites), the per-program abstract domain reachable by iteration is finite up to the program’s control-flow structure; hence Kleene iteration terminates without an additional widening.
+
+\paragraph{Per-site idempotence (transfer-local).}
+Let $T_q$ be the abstract transfer at a fixed program point $q$.
+Then $T_q$ is idempotent: for all environments $\Delta$, $T_q(T_q(\Delta)) = T_q(\Delta)$.
+\emph{Sketch.} Each $T_q$ consists of pointwise joins and, where a primitive demands a base, a single application of $\ceil{\cdot}_X$, which either leaves the input unchanged or performs exactly one downcast step $\Any^{i}\!\le\!X^{i+1}$; reapplying $T_q$ to the same input does not introduce a further increase.
+(Iterated increases across \emph{different} inputs still require information from other sites, as captured by the fixed-point iteration.)

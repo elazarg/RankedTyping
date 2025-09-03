@@ -17,6 +17,22 @@ Second, although the global order has infinite height, each program inhabits a f
 grade can go up only where a base is demanded after a loss of correlation, and each site is idempotent in the abstract interpretation.
 A standard fixed-point computation therefore converges \emph{without} bespoke widenings.
 
+\paragraph{Motivating example.}
+Consider a simple, real-world pattern (pseudo-TypeScript):
+\begin{quote}\ttfamily
+(1) function process(data) \{\\
+(2) \ \ if (useCache) \{ data = getCachedString(); \}\\
+(3) \ \ else \{ data = computeNumber(); \}\\
+(4) \ \ return data.length;\\
+(5) \}
+\end{quote}
+A path-insensitive analysis collapses the join at lines~(2)--(3) and reports ``type is unknown'' at line~(4), leaving the developer to chase the entire dataflow.
+Our analysis instead reports \emph{where} and \emph{how much} precision was lost:
+\emph{(i)} at the join (lines~2–3) we get $data:\Any^{0}$ (no assumption yet); 
+\emph{(ii)} at the use (line~4), the property access forces a \emph{downcast} to the string base, bumping the grade to $data:\String^{1}$; 
+\emph{(iii)} the diagnostic points to the join site as the source of imprecision and the use site as the forced assumption.
+This graded account is strictly more actionable than a single top-like ``unknown.''
+
 \paragraph{Unfolded gradual typing.}
 Conceptually, this is an \emph{unfolded} form of gradual typing: instead of a single unknown \(?\), we expose a stratified family \(\Any^{0},\Any^{1},\ldots\) that records how many assumptions were needed.
 Standard gradual typing is recovered by \emph{collapsing} grades (erasing \(X^{i}\mapsto X\), \(\Any^{i}\mapsto ?\)) and adding the usual consistency/cast machinery.

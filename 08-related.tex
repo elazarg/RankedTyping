@@ -21,3 +21,15 @@ Thorn’s \emph{like types} enable fine-grained interoperation between typed and
 
 \paragraph{Abstract interpretation.}
 Methodologically, our analysis is a standard monotone, flow-sensitive abstract interpretation \cite{CousotCousot1977}. The novelty lies in the abstract domain: an \emph{unfolded} per-program slice in which the conservative same-rank join is the LUB and rank increases only at finitely many base-demand sites (idempotent per site). Thus fixed points exist without bespoke widenings, and the diagnostic information (grades and culprit sites) is exposed rather than collapsed.
+
+\paragraph{Path sensitivity and disjunctive completion.}
+Precision at joins can be recovered by duplicating control-flow contexts rather than collapsing them: 
+trace partitioning, disjunctive completion, and configurable program analysis (CPA) are standard ways to pay for path sensitivity where it matters \cite{MauborgneRival2005,BeyerHenzinger2007}.
+Our approach is orthogonal: we remain path-insensitive but \emph{quantify} and \emph{attribute} the assumptions forced by later uses.
+Rather than keeping disjunctions, we collapse early and carry a small integral signal (\emph{rank}) plus culprit sites; this keeps fixed-point iteration cheap while producing actionable diagnostics.
+
+\paragraph{Flow/occurrence typing and control-flow refinement.}
+Occurrence typing as in Typed Racket refines variable types across branches and joins by inspecting guards, recovering precision without runtime checks \cite{TobinHochstadtFelleisen2008}.
+Industrial analyzers (e.g., TypeScript, Flow) employ related control-flow analysis with unions.
+These systems aim to \emph{avoid} imprecision; our aim is to \emph{make residual imprecision explicit and localizable}.
+Where occurrence typing succeeds, our ranks stay low; when correlations are untracked (by design), ranks expose how many use-site assumptions were needed and where they arose.
