@@ -33,3 +33,11 @@ Occurrence typing as in Typed Racket refines variable types across branches and 
 Industrial analyzers (e.g., TypeScript, Flow) employ related control-flow analysis with unions.
 These systems aim to \emph{avoid} imprecision; our aim is to \emph{make residual imprecision explicit and localizable}.
 Where occurrence typing succeeds, our grades stay low; when correlations are untracked (by design), grades expose how many use-site assumptions were needed and where they arose.
+
+\paragraph{Taint analysis and quantitative information flow.}
+Classic taint analysis propagates a binary ``tainted/untainted'' label from designated sources (e.g.\ user input) through dataflow to security-sensitive sinks~\cite{DenningDenning1977}.
+Information-flow type systems generalize this to security lattices that enforce confidentiality and integrity policies~\cite{SabelfeldMyers2003}, and quantitative information flow (QIF) further extends the framework to measure \emph{how much} information leaks across a boundary~\cite{Smith2009}.
+Our grades admit a \emph{taint reading}: coercion sites ($\Any^{i}\le X^{i+1}$) act as taint \emph{sources}, each introducing one level of speculative uncertainty; $\max$-propagation in operators ensures that results inherit the worst-case taint; and ghost culprit sets provide full provenance (which sources tainted a given value).
+The key structural difference is that classic taint is \emph{binary} (tainted or not), whereas our taint is \emph{quantitative}: a natural number measuring the depth of the speculation chain.
+Moreover, propagation via $\max$ is \emph{idempotent}---touching the same tainted source twice does not increase the grade---so grades measure the \emph{depth} of the speculation chain rather than a count of individual taint events.
+This positions grades as a type-level analogue of security labels, but tracking \emph{analysis confidence} rather than information security.

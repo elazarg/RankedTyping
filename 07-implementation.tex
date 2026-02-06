@@ -4,7 +4,22 @@
 To validate the practicality and correctness of the graded type algebra and abstract interpretation, we developed a proof-of-concept implementation in OCaml. The implementation directly models the formalisms presented in this paper, including the core type system (\S\ref{sec:types}), the abstract interpreter for the \textsf{while}-language (\S\ref{sec:lang-ai}), and the ghost-set mechanism for bounded blame diagnostics (\S\ref{sec:properties}).
 
 \paragraph{Structure.}
-The implementation is structured into modules that correspond directly to the key concepts: a module for the type definitions and grade logic, separate modules for the subtyping and join operations, and a recursive abstract interpreter. This modularity confirms that the formal components are separable and map cleanly to a software architecture. The full source code is available for review.\footnote{URL to be added upon publication.}
+The implementation is structured into modules corresponding to the key concepts: type definitions and grade logic (\texttt{types}), subtyping (\texttt{subtype}), join (\texttt{join}), and a recursive abstract interpreter (\texttt{interp\_common}).
+The interpreter is parameterized as an OCaml functor \texttt{Interp\_common.Make(COERCION)}, where the \texttt{COERCION} module supplies a single function: \texttt{coerce\_to\_base}, which promotes a type to a given base (applying the grade successor when a downcast is needed).
+Two instantiations are provided:
+\begin{itemize}
+  \item \textbf{Graded} (\texttt{interp}): uses $\mathrm{succ}(n) = n{+}1$, giving the full graded type system.
+  \item \textbf{Gradual} (\texttt{interp\_gradual}): uses $\mathrm{succ}_\infty(n) = \infty$ for $n\ge 0$, collapsing grades to $\{0,\infty\}$ and reproducing standard gradual typing (see \S\ref{sec:gradual-special-case}).
+\end{itemize}
+All other components---parsing, join, cost-based interpretation selection, fixed-point iteration, ghost-state instrumentation---are shared between the two instantiations.
+A \texttt{-gradual} command-line flag selects the gradual instantiation, enabling side-by-side comparison on the same input programs.
+This confirms concretely that the entire behavioral difference between graded and gradual typing is a single function.
+The full source code is available for review.\footnote{URL to be added upon publication.}
+
+\paragraph{Cost-based interpretation selection.}
+For overloaded operators ($+$, $=$), the interpreter computes all per-base typing derivations and selects the one(s) with minimum coercion cost (see \S\ref{sec:lang-ai}).
+This is implemented as a \texttt{best\_interp} function that collects candidate $(result, cost)$ pairs, filters for minimum cost, and joins on ties.
+The cost metric is simple: coercing a type $\tau$ to base $X$ costs $0$ if $\tau$ is already $X^{i}$, and $1$ otherwise.
 
 \paragraph{Validation.}
 We validated the implementation through two complementary methods. First, all illustrative examples from \S\ref{sec:examples} were encoded as unit tests, confirming that the interpreter produces the expected graded types for common programming patterns.

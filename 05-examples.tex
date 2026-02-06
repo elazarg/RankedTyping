@@ -105,7 +105,59 @@ Both operands are $\String^{0}$; result $\String^{0}$:
                        z \mapsto \String^{0}\,].
 \]
 
-\paragraph{Example 10 (mixing bases through a later join).}
+\paragraph{Example 10 (precise arithmetic pipeline).}
+\begin{quote}\ttfamily
+x := 1;\quad y := x + 2;\quad z := y + 3
+\end{quote}
+Both operands of each $+$ are $\Int^{0}$; cost-based selection picks the $\Int$ interpretation (cost $0$) over $\String$ (cost $2$). Grade stays $0$ throughout:
+\[
+\Gamma_1 \;=\; \Gamma_0[\,x \mapsto \Int^{0},\;
+                       y \mapsto \Int^{0},\;
+                       z \mapsto \Int^{0}\,].
+\]
+Under a na\"ive ``join all interpretations'' rule, each $+$ would join $\Int$ and $\String$ results, producing $z:\Any^{1}$---a spurious loss of precision.
+
+\paragraph{Example 11 (grade sticks but does not grow).}
+\begin{quote}\ttfamily
+if b then x := 1 else x := "hi";\\
+y := x + 1;\quad z := y + 1
+\end{quote}
+After the branch: $x:\Any^{0}$.
+For $y := x + 1$: coercing $\Any^{0}$ to $\Int$ costs $1$, to $\String$ also costs $1$; the literal $1$ costs $0$ for $\Int$ and $1$ for $\String$. Total: $\Int$ costs $1$, $\String$ costs $2$. The $\Int$ interpretation wins: $y:\Int^{1}$.
+For $z := y + 1$: both operands are already $\Int$ (costs $0$); grade does not grow: $z:\Int^{1}$.
+\[
+\Gamma_1 \;=\; \Gamma_0[\,x \mapsto \Any^{0},\;
+                       y \mapsto \Int^{1},\;
+                       z \mapsto \Int^{1}\,].
+\]
+Once committed to a base (even at grade $>0$), further same-base operations are free.
+
+\paragraph{Example 12 (graded versus gradual comparison).}
+\begin{quote}\ttfamily
+a := 1;\quad b := a + 2;\\
+if c then x := 1 else x := "hi";\\
+d := x + 1;\\
+e := d + x
+\end{quote}
+Under graded typing:
+$a:\Int^{0}$, $b:\Int^{0}$ (precise pipeline).
+After the branch: $x:\Any^{0}$.
+$d:\Int^{1}$ ($\Int$ preferred, one coercion from $x$).
+$e:\Int^{1}$ ($d$ and $x$ both coerce to $\Int$ at grade $\le 1$; $\max(1,1)=1$).
+
+Under gradual typing (collapsing grades to $\{0,\infty\}$; see \S\ref{sec:extensions}):
+$a:\Int^{0}$, $b:\Int^{0}$ (same), but $d:\Int^{\infty}$ and $e:\Int^{\infty}$---the distinction between ``one speculation'' and ``two speculations'' is lost.
+\[
+\begin{array}{r@{\;\mapsto\;}l@{\qquad}r@{\;\mapsto\;}l}
+\multicolumn{2}{c}{\textbf{Graded}} & \multicolumn{2}{c}{\textbf{Gradual}} \\[2pt]
+a & \Int^{0} & a & \Int^{0} \\
+b & \Int^{0} & b & \Int^{0} \\
+d & \Int^{1} & d & \Int^{\infty} \\
+e & \Int^{1} & e & \Int^{\infty}
+\end{array}
+\]
+
+\paragraph{Example 13 (mixing bases through a later join).}
 \begin{quote}\ttfamily
 if b then x := 1 else x := "a";\\
 y := x;\\
@@ -119,7 +171,7 @@ overall
 \Gamma_1 \;=\; \Gamma_0[\,x \mapsto \Any^{0},\; y \mapsto \Any^{0}\,].
 \]
 
-\paragraph{Example 11 (guard typing is orthogonal).}
+\paragraph{Example 14 (guard typing is orthogonal).}
 \begin{quote}\ttfamily
 if (1 = 1) then x := "ok" else x := "ko"
 \end{quote}
@@ -128,7 +180,7 @@ The guard yields $\Bool^{0}$; branches both give $\String^{0}$; join preserves $
 \Gamma_1 \;=\; \Gamma_0[\,x \mapsto \String^{0}\,].
 \]
 
-\paragraph{Example 12 (absorption with a precise base).}
+\paragraph{Example 15 (absorption with a precise base).}
 \begin{quote}\ttfamily
 if b then x := 1 else x := "a";\\
 y := 0;\\
@@ -137,7 +189,7 @@ if c then x := x else x := y
 After the first \texttt{if}: $x:\Any^{0}$; and $y:\Int^{0}$.  
 At the last \texttt{if}, joining $x:\Any^{0}$ with $y:\Int^{0}$ (promoted to $\Any^{0}$) leaves $x:\Any^{0}$.
 
-\paragraph{Example 13 (disjoint effects on different variables).}
+\paragraph{Example 16 (disjoint effects on different variables).}
 \begin{quote}\ttfamily
 if b then x := 1 else x := "a";\quad
 if c then y := true else y := false
@@ -147,21 +199,21 @@ Final environment:
 \Gamma_1 \;=\; \Gamma_0[\,x \mapsto \Any^{0},\; y \mapsto \Bool^{0}\,].
 \]
 
-\paragraph{Example 14 (branch-local refinement, global imprecision).}
+\paragraph{Example 17 (branch-local refinement, global imprecision).}
 \begin{quote}\ttfamily
 if b then x := 1 else x := "a";\\
 if b then z := x + 2 else z := x + "b"
 \end{quote}
 Local coercions in each branch produce $\Int^{1}$ or $\String^{1}$ for $z$; the branch join yields $z:\Any^{1}$; $x$ remains $\Any^{0}$.
 
-\paragraph{Example 15 (loop head as a choke point).}
+\paragraph{Example 18 (loop head as a choke point).}
 \begin{quote}\ttfamily
 x := 0;\\
 while c do if d then x := x + 1 else x := x + 1
 \end{quote}
 Both inner branches agree ($\Int^{0}$); loop head join preserves $\Int^{0}$.
 
-\paragraph{Example 16 (loop with branch-induced escalation).}
+\paragraph{Example 19 (loop with branch-induced escalation).}
 \begin{quote}\ttfamily
 x := 0;\\
 while c do if d then x := x + 1 else x := "b"
@@ -171,14 +223,14 @@ Body joins (after needed coercion) to $\Any^{1}$; with per-site idempotence the 
 \Gamma_{\!*} \;=\; \Gamma_0[\,x \mapsto \Any^{1}\,].
 \]
 
-\paragraph{Example 17 (boolean loop).}
+\paragraph{Example 20 (boolean loop).}
 \begin{quote}\ttfamily
 x := true;\\
 while c do x := $\neg$ x
 \end{quote}
 Invariant $\Bool^{0}$; no grade change.
 
-\paragraph{Example 18 (propagating imprecision through copy and use).}
+\paragraph{Example 21 (propagating imprecision through copy and use).}
 \begin{quote}\ttfamily
 if b then x := 1 else x := "a";\quad y := x;\\
 z := (y = y)
@@ -186,13 +238,13 @@ z := (y = y)
 $x:\Any^{0}$, $y:\Any^{0}$.  
 Equality coerces both operands to a common base from grade $0$ and yields $z:\Bool^{1}$.
 
-\paragraph{Example 19 (multiple variables through one choke point).}
+\paragraph{Example 22 (multiple variables through one choke point).}
 \begin{quote}\ttfamily
 if b then \{ x := 1; y := "a" \} else \{ x := "b"; y := 2 \}
 \end{quote}
 Pointwise join yields $x:\Any^{0}$ and $y:\Any^{0}$.
 
-\paragraph{Example 20 (no-op branches, no escalation).}
+\paragraph{Example 23 (no-op branches, no escalation).}
 \begin{quote}\ttfamily
 x := "a";\quad if b then x := x else x := x
 \end{quote}

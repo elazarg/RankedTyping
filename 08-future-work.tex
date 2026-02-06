@@ -59,7 +59,7 @@ A least-grade subsumption discipline keeps expression typing deterministic. Anal
 Evaluate whether bounded-blame reports (e.g., ``$x$ imprecise due to sites \#7,\#12'') improve remediation compared to undifferentiated ``type is Any''.
 
 \subsection{Relations to Gradual Typing}
-Our lattice analysis remains distinct from consistency-based gradual typing. Two bridges: (i) a cast calculus with \emph{graded casts} (blame budgets); (ii) a \emph{conservative fragment} where grades never increase and the system coincides with a conventional static discipline. A grade-indexed gradual guarantee is open.
+The bridge between graded and gradual typing is now partially built: \S\ref{sec:gradual-special-case} shows that gradual typing is a special case of graded typing, obtained by collapsing the grade successor. Remaining open directions: (i) a cast calculus with \emph{graded casts} (blame budgets) and a full blame/coherence meta-theory; (ii) a grade-indexed gradual guarantee; (iii) formally verifying the embedding in both directions.
 
 \subsection{Mechanization}
 Mechanize (Coq/Agda/Isabelle): progress/preservation for the core expressions; monotonicity and convergence of the abstract interpreter (with cap/ghost product); and the bounded-blame lemma. A certified implementation can expose site IDs to the diagnostics layer.

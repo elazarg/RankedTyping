@@ -3,6 +3,7 @@ Path-insensitive analyses are cheap but routinely lose precision at joins, colla
 We make that loss explicit and quantifiable.
 The key insight is a graded algebra of types where base types and $\Any$ carry a nonnegative grade $i$; grades increase \emph{only} when a use forces a base after imprecision (the subtyping step $\Any^{i}\!\le\!X^{i+1}$), while heterogeneous joins are conservative ($X^{r}\sqcup Y^{r}=\Any^{r}$ after promotion).
 Instantiated in a conventional abstract interpreter, grades act as a small, compositional signal of \emph{how much} and \emph{where} assumptions were forced.
+A cost-based interpretation selection for overloaded operators yields principal (most precise) abstract types.
 
 We instantiate this graded domain in a standard abstract interpreter for a while-language. 
 Transfer functions are monotone; joins are associative, commutative, and idempotent. 
@@ -11,8 +12,8 @@ Fixed-point iteration therefore converges without widening.
 The analysis is a sound may-analysis: it does not eliminate runtime type errors, but it records and localizes imprecision. 
 A lightweight ghost-state instrumentation yields \emph{bounded blame}: any runtime type fault can be traced to a small, computed set of program sites.
 
-Conceptually, this is an ``unfolded'' view of gradual typing. 
-Standard gradual typing is recovered by collapsing grades ($X^{i}\mapsto X$, $\Any^{i}\mapsto ?$) and reintroducing consistency and casts. 
-We also sketch conservative extensions that reuse the same algebra. 
+Conceptually, this is an ``unfolded'' view of gradual typing.
+Standard gradual typing is recovered by collapsing grades ($X^{i}\mapsto X$, $\Any^{i}\mapsto ?$) and reintroducing consistency and casts; we demonstrate this concretely by parameterizing the abstract interpreter over a single coercion function, with the gradual instantiation differing only in the grade successor ($n \mapsto \infty$ instead of $n \mapsto n{+}1$).
+We also sketch conservative extensions that reuse the same algebra.
 The core requires no language changes and no runtime checks.
 \end{abstract}

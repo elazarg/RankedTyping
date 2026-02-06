@@ -32,10 +32,12 @@ Our analysis instead reports \emph{where} and \emph{how much} precision was lost
 \emph{(ii)} at the use (line~4), the property access forces a \emph{downcast} to the string base, bumping the grade to $data:\String^{1}$; 
 \emph{(iii)} the diagnostic points to the join site as the source of imprecision and the use site as the forced assumption.
 This graded account is strictly more actionable than a single top-like ``unknown.''
+Alternatively, grades can be read as a form of \emph{quantitative taint}: each coercion site introduces uncertainty that propagates forward via $\max$, so the grade of a value measures the depth of the speculation chain that produced it.
 
 \paragraph{Unfolded gradual typing.}
 Conceptually, this is an \emph{unfolded} form of gradual typing: instead of a single unknown \(?\), we expose a stratified family \(\Any^{0},\Any^{1},\ldots\) that records how many assumptions were needed.
 Standard gradual typing is recovered by \emph{collapsing} grades (erasing \(X^{i}\mapsto X\), \(\Any^{i}\mapsto ?\)) and adding the usual consistency/cast machinery.
+This is confirmed by the implementation: the analyzer is parameterized over a single coercion function, and substituting the grade successor $n\mapsto\infty$ (in place of $n\mapsto n{+}1$) reproduces gradual typing exactly.
 We keep the core static and cast-free; a small extension adds grade-aware casts and a collapsed, consistency-based mode.
 
 \paragraph{Contributions.}
@@ -43,6 +45,7 @@ We keep the core static and cast-free; a small extension adds grade-aware casts 
   \item A minimal graded type algebra that exposes path-insensitive precision loss as a natural-number index on types. Joins promote to a common grade and return \(\Any^{r}\) for heterogeneous bases; grades increase only at \emph{coercions} \(\Any^{i}\le X^{\,i+1}\).
   \item A conventional abstract interpreter for a while-language over this domain, with monotone transfer functions and per-program convergence \emph{without} widening (per-site idempotence).
   \item Properties and diagnostics: per-program finiteness; a bounded-blame principle via ghost culprit sets that localizes assumptions to a small set of program sites; and a clear account of what the analysis guarantees (and does not).
+  \item A concrete demonstration that standard gradual typing is a special case of graded typing: the abstract interpreter, parameterized over the coercion function, reproduces gradual typing by changing only the grade successor ($n\mapsto\infty$).
 \end{itemize}
 
 \paragraph{Utility.}

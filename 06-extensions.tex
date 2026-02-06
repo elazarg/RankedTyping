@@ -107,7 +107,34 @@ with inference propagating the shift $\alpha$ through higher-order uses.
 Keep our lattice (joins, grades) but add a consistency–based unknown $\star$ and casts.
 Grade–aware casts (as in \textsc{E4}) could supply \emph{budgets} to a gradual system, while preserving our per–program convergence guarantees.
 
-\subsection{\textsc{E10: Gradual Mode (Collapse \& Consistency)}}
+\subsection{\textsc{E10: Gradual Typing as a Special Case}}
+\label{sec:gradual-special-case}
+
+Standard gradual typing is not merely analogous to graded typing---it is a \emph{special case}, obtained by collapsing the grade lattice.
+The entire behavioral difference between the two systems reduces to a single function: the grade successor used in coercion.
+
+\paragraph{Collapsed grade lattice.}
+The graded system uses the full lattice $\bot < 0 < 1 < 2 < \cdots < \infty$.
+Gradual typing operates on the collapsed three-element lattice $\{\bot, 0, \infty\}$, where every non-zero finite grade is identified with~$\infty$.
+Formally, the only change is the \emph{successor function} used in coercion ($\ceil{\cdot}_X$):
+\[
+\begin{array}{r@{\;:\;}l@{\qquad}r@{\;:\;}l}
+\multicolumn{2}{c}{\textbf{Graded}} & \multicolumn{2}{c}{\textbf{Gradual}} \\[3pt]
+\mathrm{succ}(\bot) & 0 & \mathrm{succ}_\infty(\bot) & 0 \\
+\mathrm{succ}(n) & n{+}1 & \mathrm{succ}_\infty(n) & \infty \quad(n\ge 0)
+\end{array}
+\]
+The coercion function $\ceil{\tau}_X$ promotes a type $\tau$ to base $X$, incrementing the grade via $\mathrm{succ}$ when a downcast $\Any^{i}\!\le\!X^{\mathrm{succ}(i)}$ is needed.
+Under $\mathrm{succ}_\infty$, any such downcast immediately sends the grade to~$\infty$, which is exactly the behavior of the unknown type~$?$ in standard gradual typing: once a value passes through a dynamic check, all downstream types carry~$\infty$ (the ``dynamic'' grade).
+
+\paragraph{Implementation: a single parameterized module.}
+In the implementation (\S\ref{sec:implementation}), the abstract interpreter is parameterized over the coercion function via an OCaml functor.
+The graded and gradual instantiations differ only in the definition of $\mathrm{succ}$:
+\begin{itemize}
+  \item \textbf{Graded:} $\mathrm{succ}(n) = n{+}1$ (fine-grained distance tracking).
+  \item \textbf{Gradual:} $\mathrm{succ}_\infty(n) = \infty$ for $n \ge 0$ (binary ``known/unknown'' distinction).
+\end{itemize}
+All other components---parsing, join, subtyping, cost-based interpretation selection, fixed-point iteration---are shared verbatim.
 
 \paragraph{Erasure.}
 Define a collapse/erasure from graded to gradual types by
@@ -117,20 +144,19 @@ Define a collapse/erasure from graded to gradual types by
 \mathrm{erase}(\Bool^{i})=\Bool,\quad
 \mathrm{erase}(\Any^{i})=?,
 \]
-extended homomorphically over type constructors (products, sums, lists, \dots).
+extended homomorphically over type constructors.
+The gradual instantiation (using $\mathrm{succ}_\infty$) produces exactly the types that erasure would produce from the graded output: this is a \emph{consequence} of the collapsed lattice, not an independent definition.
 
-\paragraph{Consistency.}
+\paragraph{Precision comparison.}
+Programs where the graded system assigns finite grades ($\Int^{1}$, $\Int^{2}$) receive $\Int^{\infty}$ under the gradual instantiation---the multi-level ranking is lost.
+See Example~12 in \S\ref{sec:examples} for a concrete comparison.
+
+\paragraph{Consistency and casts.}
 On erased types, a standard consistency relation \(A \mathrel{\sim} B\) holds iff
 (i) \(A=B\); or (ii) either side is \(?\); or (iii) type constructors match and components are pairwise consistent.
-This is symmetric and shape-directed (not a subtyping order).
-
-\paragraph{Casts and dynamics.}
-Add explicit casts \(\langle \tau \Rightarrow \tau'\rangle e\).
-Evaluation inserts runtime checks against the \emph{erased} target \(\mathrm{erase}(\tau')\);
-failures raise \emph{blame} at the cast site.
-The grade-aware downcast from \textsc{E4} is a typed form
-\(\forall i.\ \Any^{i} \to X^{\,i+1}\);
-the collapsed mode also admits ungraded casts by erasure.
+The grade-aware downcast from \textsc{E4}, typed as
+$\forall i.\ \Any^{i} \to X^{\,\mathrm{succ}(i)}$,
+specializes to $\Any^{i} \to X^{\infty}$ in the gradual mode.
 
 \paragraph{Precision join correspondence.}
 For base/shape-preserving cases,
@@ -139,13 +165,15 @@ For base/shape-preserving cases,
 \;=\;
 \mathrm{erase}(\tau_1)\ \sqcup_{\!\sim}\ \mathrm{erase}(\tau_2),
 \]
-where \(\sqcup_{\!\sim}\) is the usual precision join in gradual typing (e.g., \(\mathsf{Int}\sqcup_{\!\sim}\mathsf{String}=?\), and constructors lift \(?\) componentwise).
+where \(\sqcup_{\!\sim}\) is the usual precision join in gradual typing (e.g., \(\Int\sqcup_{\!\sim}\String=?\), and constructors lift \(?\) componentwise).
 
-\paragraph{Obligations (left to future work).}
-(i) \emph{Conservative extension}: erasure of a purely static program is well-typed in the gradual mode. 
-(ii) \emph{Blame/coherence}: standard cast meta-theory over the erased core. 
-(iii) \emph{Gradual guarantee}: precision monotonicity phrased on erased types. 
-(iv) \emph{Embedding}: the graded system embeds into the gradual system by \(\mathrm{erase}\); the reverse picks finite-grade representatives.
+\paragraph{Status of obligations.}
+\begin{itemize}
+  \item \emph{Conservative extension}: resolved by construction. A purely static program (all grades $0$) is well-typed under both instantiations, since $\mathrm{succ}$ is never invoked.
+  \item \emph{Blame/coherence}: standard cast meta-theory over the erased core. Open.
+  \item \emph{Gradual guarantee}: precision monotonicity phrased on erased types. Open.
+  \item \emph{Embedding}: the graded system embeds into the gradual system by erasure; the reverse picks finite-grade representatives. Open.
+\end{itemize}
 
 \subsection{\textsc{E11: Metric Toggle: Downcast vs.\ Merge Counting}}
 
@@ -183,3 +211,4 @@ Either can be selected without changing the concrete semantics or the core latti
 \paragraph{Summary.}
 \textsc{E1} makes grades first–class in function specifications with a simple, solvable constraint language.
 \textsc{E2}–\textsc{E9} explore orthogonal axes: effects, budgets, casts, richer types, SSA integration, precision recovery, higher order, and interop.
+\textsc{E10} is realized concretely: the gradual typing instantiation is implemented and validated alongside the graded system, confirming that a single function ($\mathrm{succ}$) separates the two.

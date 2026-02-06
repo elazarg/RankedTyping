@@ -59,7 +59,11 @@ We write $\Gamma \vdash e : \tau$ for abstract evaluation.
   { \Gamma \vdash e : \tau' }
 \end{mathpar}
 
-\noindent Operators coerce operands to the relevant base(s) using $\ceil{\cdot}_X$ and then combine grades via $\max$; when multiple operator interpretations apply, we join the results:
+\noindent Operators coerce operands to the relevant base(s) using $\ceil{\cdot}_X$ and then combine grades via $\max$.
+Each overloaded operator admits several per-base typing derivations; the abstract interpreter selects the \emph{most precise} result using a cost-based criterion.
+
+\paragraph{Per-base derivations.}
+For~$+$, there are two per-base rules (integer addition and string concatenation):
 
 \begin{mathpar}
 \inferrule*[right=(Plus$_\Int$)]
@@ -71,11 +75,54 @@ We write $\Gamma \vdash e : \tau$ for abstract evaluation.
   { \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
     \ceil{\tau_1}_\String = \String^{i} \quad \ceil{\tau_2}_\String = \String^{j} }
   { \Gamma \vdash e_1{+}e_2 : \String^{\max(i,j)} }
-
-\inferrule*[right=(Plus-Join)]
-  { \Gamma \vdash e_1{+}e_2 : \tau_I \quad \Gamma \vdash e_1{+}e_2 : \tau_S }
-  { \Gamma \vdash e_1{+}e_2 : \tau_I \sqcup \tau_S }
 \end{mathpar}
+
+\noindent Similarly, equality admits three per-base rules (one for each of $\Int$, $\String$, $\Bool$):
+
+\begin{mathpar}
+\inferrule*[right=(Eq$_X$)]
+  { X\in\{\Int,\String,\Bool\} \\
+    \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
+    \ceil{\tau_1}_X = X^{i} \quad \ceil{\tau_2}_X = X^{j} }
+  { \Gamma \vdash e_1 {=} e_2 : \Bool^{\max(i,j)} }
+\end{mathpar}
+
+\paragraph{Coercion cost and interpretation selection.}
+Each per-base derivation requires coercing the operands to a common base~$X$. Define the \emph{coercion cost} of a type~$\tau$ with respect to base~$X$:
+\[
+\cost{X}(\tau) \;=\;
+\begin{cases}
+0 & \text{if } \tau = X^{i} \text{ for some } i,\\
+1 & \text{otherwise.}
+\end{cases}
+\]
+The \emph{total cost} of an interpretation under base~$X$ with operands $\tau_1,\tau_2$ is $\cost{X}(\tau_1)+\cost{X}(\tau_2)$.
+The abstract interpreter selects the interpretation(s) with minimum total cost.
+When the minimum is achieved by a unique base, that base's result is returned; when multiple bases tie, their results are joined:
+
+\begin{mathpar}
+\inferrule*[right=(Plus-Select)]
+  { \mathcal{B} = \{\Int,\String\} \\[2pt]
+    \text{For each } X\in\mathcal{B}\!:\;
+    \Gamma \vdash e_1{+}e_2 : \tau_X \text{ via (Plus$_X$)}
+    \;\;\text{with total cost } c_X \\[2pt]
+    c^* = \min_{X\in\mathcal{B}} c_X \qquad
+    \mathcal{B}^* = \{X\in\mathcal{B}\mid c_X = c^*\} }
+  { \Gamma \vdash e_1{+}e_2 : \bigsqcup_{X\in\mathcal{B}^*}\!\tau_X }
+
+\inferrule*[right=(Eq-Select)]
+  { \mathcal{B} = \{\Int,\String,\Bool\} \\[2pt]
+    \text{For each } X\in\mathcal{B}\!:\;
+    \Gamma \vdash e_1{=}e_2 : \rho_X \text{ via (Eq$_X$)}
+    \;\;\text{with total cost } c_X \\[2pt]
+    c^* = \min_{X\in\mathcal{B}} c_X \qquad
+    \mathcal{B}^* = \{X\in\mathcal{B}\mid c_X = c^*\} }
+  { \Gamma \vdash e_1{=}e_2 : \bigsqcup_{X\in\mathcal{B}^*}\!\rho_X }
+\end{mathpar}
+
+\noindent\emph{Intuition.} When both operands are already of a given base (e.g., both $\Int^{i}$), the cost for that base is~$0$ while all other bases require coercions (cost~$\ge 1$). The operator therefore returns the matching base at no grade increase. Only when no single base is free---e.g., both operands are $\Any^{0}$---do multiple interpretations tie (all at cost~$1$ each), and their join produces $\Any$.
+
+\emph{Admissibility.} The old ``join all'' rule (always joining every per-base derivation) is derivable via~(Sub), since each per-base result is a subtype of the join of all results. Cost-based selection is therefore a \emph{refinement}: it never produces a type above what ``join all'' would produce, but it often produces a strictly more precise one. The result is a \emph{principal} (most precise) abstract type for overloaded operators.
 
 \begin{mathpar}
 \inferrule*[right=(Not)]
@@ -86,19 +133,6 @@ We write $\Gamma \vdash e : \tau$ for abstract evaluation.
   { \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
     \ceil{\tau_1}_\Bool=\Bool^{i} \quad \ceil{\tau_2}_\Bool=\Bool^{j} }
   { \Gamma \vdash e_1 \wedge e_2 : \Bool^{\max(i,j)} }
-\end{mathpar}
-
-\begin{mathpar}
-\inferrule*[right=(Eq$_X$)]
-  { X\in\{\Int,\String,\Bool\} \\
-    \Gamma \vdash e_1:\tau_1 \quad \Gamma \vdash e_2:\tau_2 \\
-    \ceil{\tau_1}_X = X^{i} \quad \ceil{\tau_2}_X = X^{j} }
-  { \Gamma \vdash e_1 {=} e_2 : \Bool^{\max(i,j)} }
-\\
-\inferrule*[right=(Eq-Join)]
-  { \Gamma \vdash e_1{=}e_2 : \rho_1 \quad
-    \Gamma \vdash e_1{=}e_2 : \rho_2 }
-  { \Gamma \vdash e_1{=}e_2 : \rho_1 \sqcup \rho_2 }
 \end{mathpar}
 
 \paragraph{Abstract statements.}
